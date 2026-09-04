@@ -1,0 +1,11 @@
+{
+  "name": "@deskcompat/ubuntu-gnome",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@deskcompat/core": "workspace:*",
+    "@deskcompat/schema": "workspace:*"
+  }
+}

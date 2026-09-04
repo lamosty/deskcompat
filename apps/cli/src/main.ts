@@ -1,0 +1,92 @@
+#!/usr/bin/env bun
+
+import { ProfileLoadError } from "@deskcompat/core";
+import type { Diagnostic } from "@deskcompat/schema";
+import { CliUsageError, parseArguments } from "./arguments.ts";
+import { doctor } from "./commands/doctor.ts";
+import { plan } from "./commands/plan.ts";
+import { validateProfile } from "./commands/validate-profile.ts";
+import { assertUnprivileged, CliEnvironmentError } from "./environment.ts";
+import { result, writeDiagnostics, writeDoctor, writeJson, writePlan } from "./output/render.ts";
+import { DESKCOMPAT_VERSION } from "./version.ts";
+
+const HELP = `DeskCompat ${DESKCOMPAT_VERSION}
+
+Safe macOS muscle-memory compatibility for Ubuntu GNOME.
+
+Usage:
+  deskcompat doctor [--json]
+  deskcompat profile validate [--profile PATH] [--json]
+  deskcompat plan [--profile PATH] [--only MODULE,...] [--json]
+  deskcompat --version
+
+This pre-alpha build is read-only. It cannot apply system changes.
+`;
+
+function exitCodeFor(diagnostics: readonly Diagnostic[]): number {
+  if (diagnostics.some(({ severity }) => severity === "blocker")) return 3;
+  if (diagnostics.some(({ severity }) => severity === "error")) return 2;
+  return 0;
+}
+
+async function main(): Promise<void> {
+  const parsed = parseArguments(Bun.argv.slice(2));
+  if (parsed.command === "help") {
+    if (parsed.json) writeJson(result("help", { text: HELP }, []));
+    else process.stdout.write(HELP);
+    return;
+  }
+  if (parsed.command === "version") {
+    if (parsed.json) writeJson(result("version", { version: DESKCOMPAT_VERSION }, []));
+    else process.stdout.write(`${DESKCOMPAT_VERSION}\n`);
+    return;
+  }
+  assertUnprivileged();
+
+  if (parsed.command === "plan") {
+    const commandResult = await plan(parsed.profilePath, parsed.only);
+    if (parsed.json) writeJson(commandResult);
+    else if (commandResult.data) writePlan(commandResult.data);
+    process.exitCode = exitCodeFor(commandResult.diagnostics);
+    return;
+  }
+
+  if (parsed.command === "doctor") {
+    const commandResult = await doctor();
+    if (parsed.json) writeJson(commandResult);
+    else if (commandResult.data) writeDoctor(commandResult.data, commandResult.diagnostics);
+    process.exitCode = exitCodeFor(commandResult.diagnostics);
+    return;
+  }
+
+  const commandResult = await validateProfile(parsed.profilePath);
+  if (parsed.json) writeJson(commandResult);
+  else {
+    process.stdout.write(`${commandResult.ok ? "OK" : "BLOCKED"}: ${commandResult.command}\n`);
+    writeDiagnostics(commandResult.diagnostics);
+  }
+  process.exitCode = exitCodeFor(commandResult.diagnostics);
+}
+
+try {
+  await main();
+} catch (error) {
+  const json = Bun.argv.includes("--json");
+  const diagnostic: Diagnostic =
+    error instanceof CliUsageError
+      ? { code: "INVALID_INVOCATION", severity: "error", message: error.message }
+      : error instanceof ProfileLoadError
+        ? { code: error.code, severity: "error", message: error.message }
+        : error instanceof CliEnvironmentError
+          ? { code: error.code, severity: "blocker", message: error.message }
+          : {
+              code: "UNEXPECTED_FAILURE",
+              severity: "error",
+              message: "DeskCompat could not complete the read-only operation.",
+              remediation: "Retry with a supported environment and report the diagnostic code.",
+            };
+
+  if (json) writeJson(result("invocation", undefined, [diagnostic]));
+  else writeDiagnostics([diagnostic]);
+  process.exitCode = exitCodeFor([diagnostic]);
+}

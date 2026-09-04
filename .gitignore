@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Local state and configuration must never be committed.
+.env
+.env.*
+!.env.example
+.deskcompat/
+
+# Editor and OS artifacts.
+.DS_Store
+.idea/
+.vscode/
+*.swp

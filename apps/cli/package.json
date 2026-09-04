@@ -1,0 +1,14 @@
+{
+  "name": "@deskcompat/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "deskcompat": "./src/main.ts"
+  },
+  "dependencies": {
+    "@deskcompat/core": "workspace:*",
+    "@deskcompat/schema": "workspace:*",
+    "@deskcompat/ubuntu-gnome": "workspace:*"
+  }
+}

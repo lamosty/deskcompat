@@ -1,0 +1,20 @@
+apiVersion = "deskcompat.dev/v1alpha1"
+kind = "Profile"
+
+[metadata]
+name = "macos-essentials"
+
+[spec.modules.workspaces]
+# Workspace count and monitor policy are personal choices, not macOS essentials.
+state = "unmanaged"
+
+[spec.modules.windowControls]
+state = "managed"
+preset = "macos-standard"
+
+# Input is intentionally observation-only until a persistent timed recovery path
+# has passed VM fault injection and physical-keyboard testing.
+[spec.modules.keyboard]
+state = "unmanaged"
+preset = "macos-pc"
+preserveRightAltGr = true

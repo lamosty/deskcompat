@@ -1,0 +1,1856 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "anyOf": [
+    {
+      "type": "object",
+      "properties": {
+        "apiVersion": {
+          "type": "string",
+          "const": "deskcompat.dev/cli/v1alpha1"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "info",
+                  "warning",
+                  "error",
+                  "blocker"
+                ]
+              },
+              "subject": {
+                "type": "string",
+                "maxLength": 256,
+                "pattern": "^[a-zA-Z0-9:._-]+$"
+              },
+              "reasonCode": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "relatedSubjects": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 256,
+                  "pattern": "^[a-zA-Z0-9:._-]+$"
+                }
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1
+              },
+              "remediation": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "code",
+              "severity",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "command": {
+          "type": "string",
+          "const": "doctor"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "platform": {
+              "type": "object",
+              "properties": {
+                "osId": {
+                  "type": "string",
+                  "enum": [
+                    "ubuntu",
+                    "other",
+                    "unknown"
+                  ]
+                },
+                "osVersion": {
+                  "type": "string",
+                  "enum": [
+                    "24.04",
+                    "other",
+                    "unknown"
+                  ]
+                },
+                "desktop": {
+                  "type": "string",
+                  "enum": [
+                    "gnome",
+                    "other",
+                    "unknown"
+                  ]
+                },
+                "desktopVersion": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "const": "unknown"
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^\\d+(?:\\.\\d+)*$"
+                    }
+                  ]
+                },
+                "sessionType": {
+                  "type": "string",
+                  "enum": [
+                    "wayland",
+                    "x11",
+                    "other",
+                    "unknown"
+                  ]
+                }
+              },
+              "required": [
+                "osId",
+                "osVersion",
+                "desktop",
+                "desktopVersion",
+                "sessionType"
+              ],
+              "additionalProperties": false
+            },
+            "capabilities": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "enum": [
+                      "gsettings",
+                      "dconf",
+                      "gnome-shell",
+                      "keyd",
+                      "xremap",
+                      "input-remapper",
+                      "session-bus"
+                    ]
+                  },
+                  "available": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "id",
+                  "available"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "conflicts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[A-Z][A-Z0-9_]*$"
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": [
+                      "info",
+                      "warning",
+                      "error",
+                      "blocker"
+                    ]
+                  },
+                  "subject": {
+                    "type": "string",
+                    "maxLength": 256,
+                    "pattern": "^[a-zA-Z0-9:._-]+$"
+                  },
+                  "reasonCode": {
+                    "type": "string",
+                    "pattern": "^[A-Z][A-Z0-9_]*$"
+                  },
+                  "relatedSubjects": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 256,
+                      "pattern": "^[a-zA-Z0-9:._-]+$"
+                    }
+                  },
+                  "message": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "remediation": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "code",
+                  "severity",
+                  "message"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "platform",
+            "capabilities",
+            "conflicts"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "apiVersion",
+        "ok",
+        "diagnostics",
+        "command",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "apiVersion": {
+          "type": "string",
+          "const": "deskcompat.dev/cli/v1alpha1"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "info",
+                  "warning",
+                  "error",
+                  "blocker"
+                ]
+              },
+              "subject": {
+                "type": "string",
+                "maxLength": 256,
+                "pattern": "^[a-zA-Z0-9:._-]+$"
+              },
+              "reasonCode": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "relatedSubjects": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 256,
+                  "pattern": "^[a-zA-Z0-9:._-]+$"
+                }
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1
+              },
+              "remediation": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "code",
+              "severity",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "command": {
+          "type": "string",
+          "const": "profile validate"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "apiVersion": {
+              "type": "string",
+              "const": "deskcompat.dev/v1alpha1"
+            },
+            "kind": {
+              "type": "string",
+              "const": "Profile"
+            },
+            "metadata": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            "spec": {
+              "type": "object",
+              "properties": {
+                "modules": {
+                  "type": "object",
+                  "properties": {
+                    "workspaces": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "state": {
+                              "type": "string",
+                              "const": "managed"
+                            },
+                            "count": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 36
+                            },
+                            "allMonitors": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "state",
+                            "count"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "unmanaged",
+                                "disabled"
+                              ]
+                            },
+                            "count": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 36
+                            },
+                            "allMonitors": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "state"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "windowControls": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "state": {
+                              "type": "string",
+                              "const": "managed"
+                            },
+                            "preset": {
+                              "type": "string",
+                              "const": "macos-standard"
+                            }
+                          },
+                          "required": [
+                            "state",
+                            "preset"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "unmanaged",
+                                "disabled"
+                              ]
+                            },
+                            "preset": {
+                              "type": "string",
+                              "const": "macos-standard"
+                            }
+                          },
+                          "required": [
+                            "state"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "keyboard": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "state": {
+                              "type": "string",
+                              "const": "managed"
+                            },
+                            "preset": {
+                              "type": "string",
+                              "const": "macos-pc"
+                            },
+                            "preserveRightAltGr": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "state",
+                            "preset"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "unmanaged",
+                                "disabled"
+                              ]
+                            },
+                            "preset": {
+                              "type": "string",
+                              "const": "macos-pc"
+                            },
+                            "preserveRightAltGr": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "state"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "modules"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "apiVersion",
+            "kind",
+            "metadata",
+            "spec"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "apiVersion",
+        "ok",
+        "diagnostics",
+        "command",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "apiVersion": {
+          "type": "string",
+          "const": "deskcompat.dev/cli/v1alpha1"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "info",
+                  "warning",
+                  "error",
+                  "blocker"
+                ]
+              },
+              "subject": {
+                "type": "string",
+                "maxLength": 256,
+                "pattern": "^[a-zA-Z0-9:._-]+$"
+              },
+              "reasonCode": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "relatedSubjects": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 256,
+                  "pattern": "^[a-zA-Z0-9:._-]+$"
+                }
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1
+              },
+              "remediation": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "code",
+              "severity",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "command": {
+          "type": "string",
+          "const": "plan"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "apiVersion": {
+              "type": "string",
+              "const": "deskcompat.dev/plan/v1alpha1"
+            },
+            "planId": {
+              "type": "string",
+              "pattern": "^pln_[a-f0-9]{64}$"
+            },
+            "semanticDigest": {
+              "type": "string",
+              "pattern": "^sem_[a-f0-9]{64}$"
+            },
+            "profileDigest": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "factsDigest": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "toolVersion": {
+              "type": "string"
+            },
+            "supportTarget": {
+              "type": "string",
+              "const": "ubuntu-24.04-gnome-46-wayland"
+            },
+            "scope": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "workspaces",
+                  "windowControls",
+                  "keyboard"
+                ]
+              }
+            },
+            "resources": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "moduleIds": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "workspaces",
+                            "windowControls",
+                            "keyboard"
+                          ]
+                        }
+                      },
+                      "disposition": {
+                        "type": "string",
+                        "enum": [
+                          "change",
+                          "unchanged",
+                          "unavailable",
+                          "skipped"
+                        ]
+                      },
+                      "resourceId": {
+                        "type": "string",
+                        "const": "gsettings:org.gnome.mutter:dynamic-workspaces"
+                      },
+                      "desired": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "boolean"
+                            },
+                            "value": {
+                              "type": "boolean",
+                              "const": false
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "observed": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "present",
+                                  "inherited"
+                                ]
+                              },
+                              "effective": {
+                                "type": "object",
+                                "properties": {
+                                  "type": {
+                                    "type": "string",
+                                    "const": "boolean"
+                                  },
+                                  "value": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "value"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "writable": {
+                                "type": "boolean"
+                              },
+                              "digest": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              }
+                            },
+                            "required": [
+                              "status",
+                              "effective",
+                              "writable",
+                              "digest"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "unavailable",
+                                  "skipped"
+                                ]
+                              },
+                              "reasonCode": {
+                                "type": "string",
+                                "pattern": "^[A-Z][A-Z0-9_]*$"
+                              }
+                            },
+                            "required": [
+                              "status",
+                              "reasonCode"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "moduleIds",
+                      "disposition",
+                      "resourceId",
+                      "desired",
+                      "observed"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "moduleIds": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "workspaces",
+                            "windowControls",
+                            "keyboard"
+                          ]
+                        }
+                      },
+                      "disposition": {
+                        "type": "string",
+                        "enum": [
+                          "change",
+                          "unchanged",
+                          "unavailable",
+                          "skipped"
+                        ]
+                      },
+                      "resourceId": {
+                        "type": "string",
+                        "const": "gsettings:org.gnome.desktop.wm.preferences:num-workspaces"
+                      },
+                      "desired": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "int32"
+                            },
+                            "value": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 36
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "observed": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "present",
+                                  "inherited"
+                                ]
+                              },
+                              "effective": {
+                                "type": "object",
+                                "properties": {
+                                  "type": {
+                                    "type": "string",
+                                    "const": "int32"
+                                  },
+                                  "value": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 36
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "value"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "writable": {
+                                "type": "boolean"
+                              },
+                              "digest": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              }
+                            },
+                            "required": [
+                              "status",
+                              "effective",
+                              "writable",
+                              "digest"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "unavailable",
+                                  "skipped"
+                                ]
+                              },
+                              "reasonCode": {
+                                "type": "string",
+                                "pattern": "^[A-Z][A-Z0-9_]*$"
+                              }
+                            },
+                            "required": [
+                              "status",
+                              "reasonCode"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "moduleIds",
+                      "disposition",
+                      "resourceId",
+                      "desired",
+                      "observed"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "moduleIds": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "workspaces",
+                            "windowControls",
+                            "keyboard"
+                          ]
+                        }
+                      },
+                      "disposition": {
+                        "type": "string",
+                        "enum": [
+                          "change",
+                          "unchanged",
+                          "unavailable",
+                          "skipped"
+                        ]
+                      },
+                      "resourceId": {
+                        "type": "string",
+                        "const": "gsettings:org.gnome.mutter:workspaces-only-on-primary"
+                      },
+                      "desired": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "boolean"
+                            },
+                            "value": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "observed": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "present",
+                                  "inherited"
+                                ]
+                              },
+                              "effective": {
+                                "type": "object",
+                                "properties": {
+                                  "type": {
+                                    "type": "string",
+                                    "const": "boolean"
+                                  },
+                                  "value": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "value"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "writable": {
+                                "type": "boolean"
+                              },
+                              "digest": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              }
+                            },
+                            "required": [
+                              "status",
+                              "effective",
+                              "writable",
+                              "digest"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "unavailable",
+                                  "skipped"
+                                ]
+                              },
+                              "reasonCode": {
+                                "type": "string",
+                                "pattern": "^[A-Z][A-Z0-9_]*$"
+                              }
+                            },
+                            "required": [
+                              "status",
+                              "reasonCode"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "moduleIds",
+                      "disposition",
+                      "resourceId",
+                      "desired",
+                      "observed"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "moduleIds": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "workspaces",
+                            "windowControls",
+                            "keyboard"
+                          ]
+                        }
+                      },
+                      "disposition": {
+                        "type": "string",
+                        "enum": [
+                          "change",
+                          "unchanged",
+                          "unavailable",
+                          "skipped"
+                        ]
+                      },
+                      "resourceId": {
+                        "type": "string",
+                        "const": "gsettings:org.gnome.desktop.wm.preferences:button-layout"
+                      },
+                      "desired": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "string"
+                            },
+                            "value": {
+                              "type": "string",
+                              "const": "close,minimize,maximize:"
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "observed": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "present",
+                                  "inherited"
+                                ]
+                              },
+                              "effective": {
+                                "type": "object",
+                                "properties": {
+                                  "type": {
+                                    "type": "string",
+                                    "const": "string"
+                                  },
+                                  "value": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "value"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "writable": {
+                                "type": "boolean"
+                              },
+                              "digest": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              }
+                            },
+                            "required": [
+                              "status",
+                              "effective",
+                              "writable",
+                              "digest"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "unavailable",
+                                  "skipped"
+                                ]
+                              },
+                              "reasonCode": {
+                                "type": "string",
+                                "pattern": "^[A-Z][A-Z0-9_]*$"
+                              }
+                            },
+                            "required": [
+                              "status",
+                              "reasonCode"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "moduleIds",
+                      "disposition",
+                      "resourceId",
+                      "desired",
+                      "observed"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "operations": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "gsettings.set"
+                      },
+                      "id": {
+                        "type": "string",
+                        "pattern": "^op_[a-f0-9]{64}$"
+                      },
+                      "privilege": {
+                        "type": "string",
+                        "const": "user"
+                      },
+                      "dependsOn": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^op_[a-f0-9]{64}$"
+                        }
+                      },
+                      "expectedBeforeDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "moduleId": {
+                        "type": "string",
+                        "const": "workspaces"
+                      },
+                      "resourceId": {
+                        "type": "string",
+                        "const": "gsettings:org.gnome.mutter:dynamic-workspaces"
+                      },
+                      "desired": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "boolean"
+                          },
+                          "value": {
+                            "type": "boolean",
+                            "const": false
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "value"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "risk": {
+                        "type": "string",
+                        "const": "desktop-session"
+                      },
+                      "rollbackQuality": {
+                        "type": "string",
+                        "const": "not-implemented"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "id",
+                      "privilege",
+                      "dependsOn",
+                      "expectedBeforeDigest",
+                      "moduleId",
+                      "resourceId",
+                      "desired",
+                      "risk",
+                      "rollbackQuality"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "gsettings.set"
+                      },
+                      "id": {
+                        "type": "string",
+                        "pattern": "^op_[a-f0-9]{64}$"
+                      },
+                      "privilege": {
+                        "type": "string",
+                        "const": "user"
+                      },
+                      "dependsOn": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^op_[a-f0-9]{64}$"
+                        }
+                      },
+                      "expectedBeforeDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "moduleId": {
+                        "type": "string",
+                        "const": "workspaces"
+                      },
+                      "resourceId": {
+                        "type": "string",
+                        "const": "gsettings:org.gnome.desktop.wm.preferences:num-workspaces"
+                      },
+                      "desired": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "int32"
+                          },
+                          "value": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 36
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "value"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "risk": {
+                        "type": "string",
+                        "const": "desktop-session"
+                      },
+                      "rollbackQuality": {
+                        "type": "string",
+                        "const": "not-implemented"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "id",
+                      "privilege",
+                      "dependsOn",
+                      "expectedBeforeDigest",
+                      "moduleId",
+                      "resourceId",
+                      "desired",
+                      "risk",
+                      "rollbackQuality"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "gsettings.set"
+                      },
+                      "id": {
+                        "type": "string",
+                        "pattern": "^op_[a-f0-9]{64}$"
+                      },
+                      "privilege": {
+                        "type": "string",
+                        "const": "user"
+                      },
+                      "dependsOn": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^op_[a-f0-9]{64}$"
+                        }
+                      },
+                      "expectedBeforeDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "moduleId": {
+                        "type": "string",
+                        "const": "workspaces"
+                      },
+                      "resourceId": {
+                        "type": "string",
+                        "const": "gsettings:org.gnome.mutter:workspaces-only-on-primary"
+                      },
+                      "desired": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "boolean"
+                          },
+                          "value": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "value"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "risk": {
+                        "type": "string",
+                        "const": "desktop-session"
+                      },
+                      "rollbackQuality": {
+                        "type": "string",
+                        "const": "not-implemented"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "id",
+                      "privilege",
+                      "dependsOn",
+                      "expectedBeforeDigest",
+                      "moduleId",
+                      "resourceId",
+                      "desired",
+                      "risk",
+                      "rollbackQuality"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "gsettings.set"
+                      },
+                      "id": {
+                        "type": "string",
+                        "pattern": "^op_[a-f0-9]{64}$"
+                      },
+                      "privilege": {
+                        "type": "string",
+                        "const": "user"
+                      },
+                      "dependsOn": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^op_[a-f0-9]{64}$"
+                        }
+                      },
+                      "expectedBeforeDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "moduleId": {
+                        "type": "string",
+                        "const": "windowControls"
+                      },
+                      "resourceId": {
+                        "type": "string",
+                        "const": "gsettings:org.gnome.desktop.wm.preferences:button-layout"
+                      },
+                      "desired": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "string"
+                          },
+                          "value": {
+                            "type": "string",
+                            "const": "close,minimize,maximize:"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "value"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "risk": {
+                        "type": "string",
+                        "const": "low"
+                      },
+                      "rollbackQuality": {
+                        "type": "string",
+                        "const": "not-implemented"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "id",
+                      "privilege",
+                      "dependsOn",
+                      "expectedBeforeDigest",
+                      "moduleId",
+                      "resourceId",
+                      "desired",
+                      "risk",
+                      "rollbackQuality"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[A-Z][A-Z0-9_]*$"
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": [
+                      "info",
+                      "warning",
+                      "error",
+                      "blocker"
+                    ]
+                  },
+                  "subject": {
+                    "type": "string",
+                    "maxLength": 256,
+                    "pattern": "^[a-zA-Z0-9:._-]+$"
+                  },
+                  "reasonCode": {
+                    "type": "string",
+                    "pattern": "^[A-Z][A-Z0-9_]*$"
+                  },
+                  "relatedSubjects": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 256,
+                      "pattern": "^[a-zA-Z0-9:._-]+$"
+                    }
+                  },
+                  "message": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "remediation": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "code",
+                  "severity",
+                  "message"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[A-Z][A-Z0-9_]*$"
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": [
+                      "info",
+                      "warning",
+                      "error",
+                      "blocker"
+                    ]
+                  },
+                  "subject": {
+                    "type": "string",
+                    "maxLength": 256,
+                    "pattern": "^[a-zA-Z0-9:._-]+$"
+                  },
+                  "reasonCode": {
+                    "type": "string",
+                    "pattern": "^[A-Z][A-Z0-9_]*$"
+                  },
+                  "relatedSubjects": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 256,
+                      "pattern": "^[a-zA-Z0-9:._-]+$"
+                    }
+                  },
+                  "message": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "remediation": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "code",
+                  "severity",
+                  "message"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "summary": {
+              "type": "object",
+              "properties": {
+                "changes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "unchanged": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "unavailable": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "skipped": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "changes",
+                "unchanged",
+                "unavailable",
+                "skipped"
+              ],
+              "additionalProperties": false
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            "expiresAt": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            }
+          },
+          "required": [
+            "apiVersion",
+            "planId",
+            "semanticDigest",
+            "profileDigest",
+            "factsDigest",
+            "toolVersion",
+            "supportTarget",
+            "scope",
+            "resources",
+            "operations",
+            "blockers",
+            "warnings",
+            "summary",
+            "createdAt",
+            "expiresAt"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "apiVersion",
+        "ok",
+        "diagnostics",
+        "command",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "apiVersion": {
+          "type": "string",
+          "const": "deskcompat.dev/cli/v1alpha1"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "info",
+                  "warning",
+                  "error",
+                  "blocker"
+                ]
+              },
+              "subject": {
+                "type": "string",
+                "maxLength": 256,
+                "pattern": "^[a-zA-Z0-9:._-]+$"
+              },
+              "reasonCode": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "relatedSubjects": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 256,
+                  "pattern": "^[a-zA-Z0-9:._-]+$"
+                }
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1
+              },
+              "remediation": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "code",
+              "severity",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "command": {
+          "type": "string",
+          "const": "help"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "apiVersion",
+        "ok",
+        "diagnostics",
+        "command",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "apiVersion": {
+          "type": "string",
+          "const": "deskcompat.dev/cli/v1alpha1"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "info",
+                  "warning",
+                  "error",
+                  "blocker"
+                ]
+              },
+              "subject": {
+                "type": "string",
+                "maxLength": 256,
+                "pattern": "^[a-zA-Z0-9:._-]+$"
+              },
+              "reasonCode": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "relatedSubjects": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 256,
+                  "pattern": "^[a-zA-Z0-9:._-]+$"
+                }
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1
+              },
+              "remediation": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "code",
+              "severity",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "command": {
+          "type": "string",
+          "const": "version"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "version"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "apiVersion",
+        "ok",
+        "diagnostics",
+        "command",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "apiVersion": {
+          "type": "string",
+          "const": "deskcompat.dev/cli/v1alpha1"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "info",
+                  "warning",
+                  "error",
+                  "blocker"
+                ]
+              },
+              "subject": {
+                "type": "string",
+                "maxLength": 256,
+                "pattern": "^[a-zA-Z0-9:._-]+$"
+              },
+              "reasonCode": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "relatedSubjects": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 256,
+                  "pattern": "^[a-zA-Z0-9:._-]+$"
+                }
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1
+              },
+              "remediation": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "code",
+              "severity",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "command": {
+          "type": "string",
+          "const": "invocation"
+        }
+      },
+      "required": [
+        "apiVersion",
+        "ok",
+        "diagnostics",
+        "command"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

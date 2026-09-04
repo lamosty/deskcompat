@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "const": "deskcompat.dev/v1alpha1"
+    },
+    "kind": {
+      "type": "string",
+      "const": "Profile"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "spec": {
+      "type": "object",
+      "properties": {
+        "modules": {
+          "type": "object",
+          "properties": {
+            "workspaces": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "const": "managed"
+                    },
+                    "count": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 36
+                    },
+                    "allMonitors": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "count"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "unmanaged",
+                        "disabled"
+                      ]
+                    },
+                    "count": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 36
+                    },
+                    "allMonitors": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "state"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "windowControls": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "const": "managed"
+                    },
+                    "preset": {
+                      "type": "string",
+                      "const": "macos-standard"
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "preset"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "unmanaged",
+                        "disabled"
+                      ]
+                    },
+                    "preset": {
+                      "type": "string",
+                      "const": "macos-standard"
+                    }
+                  },
+                  "required": [
+                    "state"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "keyboard": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "const": "managed"
+                    },
+                    "preset": {
+                      "type": "string",
+                      "const": "macos-pc"
+                    },
+                    "preserveRightAltGr": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "preset"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "unmanaged",
+                        "disabled"
+                      ]
+                    },
+                    "preset": {
+                      "type": "string",
+                      "const": "macos-pc"
+                    },
+                    "preserveRightAltGr": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "state"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "modules"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "additionalProperties": false
+}

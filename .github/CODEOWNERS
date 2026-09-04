@@ -1,0 +1,7 @@
+* @lamosty
+
+# Security-sensitive contracts require maintainer review.
+/apps/admin/ @lamosty
+/packages/core/src/transactions/ @lamosty
+/docs/safety-model.md @lamosty
+/docs/transaction-semantics.md @lamosty

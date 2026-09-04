@@ -1,0 +1,67 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`buildPlan is semantically deterministic 1`] = `
+{
+  "apiVersion": "deskcompat.dev/plan/v1alpha1",
+  "blockers": [],
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "expiresAt": "2026-01-01T00:15:00.000Z",
+  "factsDigest": "40b0e5c4bc415d99b743bbf37bb588405d2135779e73e3db82748ae3c29a59cd",
+  "operations": [
+    {
+      "dependsOn": [],
+      "desired": {
+        "type": "string",
+        "value": "close,minimize,maximize:",
+      },
+      "expectedBeforeDigest": "b06e7574bcac88e16dcd1efadb6da21a156a147b93b9515f0af62b5a6d046b5d",
+      "id": "op_907776acba7ba9857d35187f76a7c0898af597e563f3effed855eedfdeb36296",
+      "kind": "gsettings.set",
+      "moduleId": "windowControls",
+      "privilege": "user",
+      "resourceId": "gsettings:org.gnome.desktop.wm.preferences:button-layout",
+      "risk": "low",
+      "rollbackQuality": "not-implemented",
+    },
+  ],
+  "planId": "pln_2b4efb532b3b3d39b52b003633c451b264b28927a432d0ade12f45209e6a4064",
+  "profileDigest": "296bfe39f7933a62211e9f1bdf41842086e7e434a090af332fcf4b422183cbf7",
+  "resources": [
+    {
+      "desired": [
+        {
+          "type": "string",
+          "value": "close,minimize,maximize:",
+        },
+      ],
+      "disposition": "change",
+      "moduleIds": [
+        "windowControls",
+      ],
+      "observed": {
+        "digest": "b06e7574bcac88e16dcd1efadb6da21a156a147b93b9515f0af62b5a6d046b5d",
+        "effective": {
+          "type": "string",
+          "value": ":close",
+        },
+        "status": "inherited",
+        "writable": true,
+      },
+      "resourceId": "gsettings:org.gnome.desktop.wm.preferences:button-layout",
+    },
+  ],
+  "scope": [
+    "windowControls",
+  ],
+  "semanticDigest": "sem_9cdd6bb40af212589e521f95bd0bc3b848941b16f8ae09528f7dd22926e483d2",
+  "summary": {
+    "changes": 1,
+    "skipped": 0,
+    "unavailable": 0,
+    "unchanged": 0,
+  },
+  "supportTarget": "ubuntu-24.04-gnome-46-wayland",
+  "toolVersion": "test",
+  "warnings": [],
+}
+`;
