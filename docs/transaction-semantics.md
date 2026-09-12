@@ -1,8 +1,9 @@
 # Transaction semantics
 
 > [!IMPORTANT]
-> This is the required design for a future mutating milestone. The current pre-alpha
-> is read-only and implements no transaction, journal, apply, revert, or recovery path.
+> The user-level scalar GNOME slice now implements this journaled model. It remains
+> experimental and has not completed the clean-VM and daily-driver release gates.
+> Privileged input transactions and independent timed recovery are not implemented.
 
 ## Summary
 
@@ -183,6 +184,8 @@ and process start time so an abandoned lock can be distinguished from PID reuse.
 
 Locking does not prevent GNOME or another tool from changing a target. Resource digests
 and compare-before-write checks remain mandatory immediately before each mutation.
+GSettings has no atomic compare-and-swap primitive, so this detects ordinary drift but
+cannot eliminate the final external-writer race window.
 
 ## Privileged subtransactions
 

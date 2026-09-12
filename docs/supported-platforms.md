@@ -2,19 +2,19 @@
 
 ## Current project status
 
-DeskCompat is an implementation-stage, read-only pre-alpha and has no released,
-verified support matrix yet. The table below distinguishes the v0.1 target from
-future candidates; it is not a claim that installation is currently safe.
+DeskCompat is an implementation-stage pre-alpha and has no released, verified support
+matrix yet. The table below distinguishes the experimental scalar-settings target
+from future candidates; it is not a claim that installation is currently safe.
 
 ## v0.1 target
 
 | Component | Target | Status |
 |---|---|---|
-| Distribution | Ubuntu 24.04 LTS | Detection implemented; mutation unavailable |
-| Desktop | GNOME 46 | Detection implemented; mutation unavailable |
-| Session | Wayland | Detection implemented; mutation unavailable |
+| Distribution | Ubuntu 24.04 LTS | Detection and experimental scalar mutation |
+| Desktop | GNOME 46 | Detection and experimental scalar mutation |
+| Session | Wayland | Direct and detached-agent session detection |
 | Init/service manager | systemd | Future input milestone |
-| Settings backend | GSettings/dconf | Read-only inspection implemented |
+| Settings backend | GSettings/dconf | Four scalar resources with conditional revert |
 | Input backend | One audited, tested backend | Decision required before input implementation |
 | Keyboard | Conventional PC keyboard; international/AltGr preservation must be tested | Planned for v0.1 |
 

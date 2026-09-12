@@ -3,9 +3,9 @@
 ## Status
 
 This document defines the target architecture for the first DeskCompat release. The
-current pre-alpha implements runtime schemas, read-only platform inspection, module
-resolution, and deterministic planning. Persistence, mutation, ownership, recovery,
-and the privileged helper described below are future milestones.
+current pre-alpha implements runtime schemas, platform inspection, module resolution,
+ownership-aware planning, and the user-level scalar GNOME transaction lifecycle.
+The privileged input helper described below remains a future milestone.
 
 DeskCompat v0.1 targets Ubuntu 24.04, GNOME 46, and Wayland. It provides a narrow,
 deterministic engine for applying selected macOS-style desktop behaviours. Broader
@@ -133,11 +133,12 @@ Planning performs these steps in order:
 4. Reject missing capabilities, conflicts, and duplicate resource ownership.
 5. Inspect the explicit current state of every target.
 6. Compute typed operations and rollback-quality metadata.
-7. Topologically sort operations, then sort ties by kind and resource ID.
+7. Sort operations deterministically by kind and resource ID. Dependency edges are
+   rejected until the executor implements and tests them.
 8. Canonicalize behavior and observations into a stable `semanticDigest`, then derive
    `planId` from the complete expiring artifact.
-9. Persist the immutable plan under the user state directory (a future write-side
-   milestone; the current preview returns it without persistence).
+9. Return the plan without writing application or desktop state. `apply --plan` later
+   persists the exact reviewed artifact under the user state directory before mutation.
 
 Creation timestamps and presentation strings do not participate in `semanticDigest`;
 creation and expiry do participate in `planId`. Applying a plan reloads it, validates

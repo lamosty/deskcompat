@@ -2,8 +2,10 @@
 
 ## Status and scope
 
-This document defines required safety properties for DeskCompat v0.1. It is a design
-contract, not a claim that the current bootstrap repository already implements them.
+This document defines required safety properties for DeskCompat v0.1. The scalar GNOME
+transaction slice implements the user-level parts of this contract, but clean-VM,
+interruption, upgrade, and daily-driver release validation is still outstanding.
+Privileged input safety remains design-only.
 
 DeskCompat is intended to change desktop and input configuration after these gates are
 implemented. It can reduce risk and provide bounded recovery, but it cannot make
@@ -34,7 +36,8 @@ Every mutating implementation must preserve these invariants:
 - Applying a plan never silently recalculates it.
 - Every operation has an observed precondition and an owning module.
 - Recovery material is durably stored before its corresponding side effect.
-- DeskCompat does not overwrite a resource changed after it was planned or applied.
+- DeskCompat reinspects immediately before mutation and refuses any detected change
+  after planning or application.
 - One resource has at most one DeskCompat module owner.
 - Profiles cannot contain code, commands, arbitrary paths, or executable hooks.
 - The user CLI never runs as root.
@@ -90,6 +93,11 @@ On revert, DeskCompat compares the current value with the value it applied:
 
 This conditional behaviour avoids erasing changes made by the user, GNOME, another
 agent, or another configuration tool after DeskCompat ran.
+
+GSettings/dconf does not expose a true compare-and-swap write. Reinspection narrows the
+race window but cannot prove whether another process wrote the identical desired value
+between the final comparison and the write. DeskCompat does not claim stronger atomic
+ownership than the underlying API can provide.
 
 ## Privilege safety
 

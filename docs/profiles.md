@@ -7,7 +7,8 @@ available at [`schemas/profile-v1alpha1.json`](../schemas/profile-v1alpha1.json)
 
 > [!WARNING]
 > The profile API is `v1alpha1` and may change before a supported release. The current
-> CLI validates and plans profiles but cannot apply them.
+> CLI can apply only the four allowlisted scalar GNOME resources; other declared
+> modules remain unmanaged or blocked.
 
 ## Management states
 
@@ -16,8 +17,8 @@ Every module has an explicit state:
 - `unmanaged`: claim no target resources and leave existing state alone; general
   diagnostics may still report a relevant capability or conflict;
 - `managed`: plan the declared desired value; and
-- `disabled`: eventually restore the original DeskCompat baseline when ownership
-  exists. It is currently blocked because transaction ownership is not implemented.
+- `disabled`: restore the original DeskCompat baseline when ownership exists. Profile-
+  driven disable remains blocked in this slice; use explicit transaction revert.
 
 Omitting a module is equivalent to expressing no intent for it. Selecting one module
 with `--only` never enables adjacent modules.

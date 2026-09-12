@@ -18,3 +18,10 @@ publicly supported release.
 - Allowlisted GNOME workspace and window-control planning.
 - Conflict detection for known installed input-remapping components.
 - Unit, CLI integration, plan-integrity, privacy-boundary, and compiled-binary tests.
+- Detached-agent graphical-session discovery through bounded logind and GNOME D-Bus
+  checks without exposing session identifiers.
+- Explicit ownership-aware adoption and drift-blocking plans.
+- Private plan, snapshot, journal, lock, transaction, and ownership persistence.
+- Experimental `apply`, `status`, `history`, `revert`, and `recover` commands for the
+  four allowlisted scalar GNOME resources.
+- Exact inherited-versus-explicit GSettings restoration and conditional compensation.

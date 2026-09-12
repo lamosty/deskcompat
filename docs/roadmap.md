@@ -31,11 +31,14 @@ Exit criteria:
 
 ### Milestone 2: transactional user-level GNOME slice
 
-- Add immutable plan storage, locking, journals, ownership, and recovery blobs.
-- Implement the allowlisted GSettings/dconf driver.
-- Add `apply`, `status`, `history`, `revert`, and `recover`.
-- Manage only the workspaces and window-control resources selected in the profile.
-- Add compare-before-write, drift conflicts, and exhaustive failure injection.
+Implementation is complete on `main`; field validation and the adoption gates below
+remain open before it is described as supported.
+
+- [x] Add immutable plan storage, locking, journals, ownership, and recovery blobs.
+- [x] Implement the allowlisted GSettings/dconf driver.
+- [x] Add `apply`, `status`, `history`, `revert`, and `recover`.
+- [x] Manage only the workspaces and window-control resources selected in the profile.
+- [ ] Complete process-crash/power-loss fault injection beyond in-process failure hooks.
 
 Exit criteria:
 

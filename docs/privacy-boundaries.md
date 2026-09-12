@@ -53,15 +53,17 @@ must use restrictive permissions. They are excluded from normal profile export,
 diagnostics, and MCP resources. A binding may use a non-unique model and
 capability description, but never a hardware serial or machine identifier.
 
-### Ephemeral observations
+### Operational observations
 
-May be read briefly to answer a specific capability question, but must not be
-persisted or emitted. Examples include whether a known file is writable by the
-current process or whether a known service is active.
+The planner emits the current typed value, explicit-versus-inherited state, and raw
+GVariant representation for the small compiled scalar allowlist. This is required to
+validate plan integrity and preserve exact restoration semantics. Plan JSON is
+therefore local operational data and must be reviewed before sharing. `apply` stores
+the reviewed plan and exact recovery snapshot only under the private state directory.
 
-Ephemeral observations are discarded after planning. A one-way hash is not a
-safe substitute when the input has a small search space or remains a stable
-fingerprint.
+Other ephemeral observations—such as whether a known file is writable or a known
+service is active—are discarded after the operation. A one-way hash is not a safe
+substitute when the input has a small search space or remains a stable fingerprint.
 
 ### Prohibited data
 

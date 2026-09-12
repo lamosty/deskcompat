@@ -28,7 +28,7 @@ coordinate disclosure after a fix is available. There is no paid bug-bounty prog
 DeskCompat is currently pre-alpha and has no supported release. Security fixes are
 made on `main`; do not use the project on a machine you cannot recover.
 
-## Enforced in the current read-only build
+## Enforced in the current pre-alpha build
 
 - `doctor`, profile validation, and `plan` do not write DeskCompat or desktop state.
 - Profiles are inert, strictly validated data and cannot contain executable hooks.
@@ -36,8 +36,14 @@ made on `main`; do not use the project on a machine you cannot recover.
 - Subprocess output and runtime profile input are size bounded.
 - Unsupported platforms produce blockers and no resource inspection plan.
 - No runtime telemetry or network access exists.
+- Mutations resolve only four compiled GNOME resource identifiers; plans cannot supply
+  schema names, keys, paths, commands, or environment overrides.
+- Plans are persisted privately, revalidated against live facts/ownership/state, and
+  journaled before side effects.
+- Revert restores an inherited key with `dconf reset`, restores an explicit raw value
+  with `dconf write`, and refuses to overwrite later drift.
 
-## Required before mutation ships
+## Required before privileged input mutation ships
 
 - Host inspection, planning, and application refuse to run as root; a separate helper
   owns the narrowly privileged operations.

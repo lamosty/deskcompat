@@ -2,10 +2,9 @@
 
 ## Status
 
-DeskCompat is **pre-alpha**. Its current product boundary is read-only discovery,
-diagnosis, and planning. The interfaces and file formats described below are a
-direction, not a compatibility promise, and no system-changing command should be
-considered supported yet.
+DeskCompat is **pre-alpha**. Discovery, ownership-aware planning, and an experimental
+transaction lifecycle for four scalar GNOME settings are implemented. The interfaces
+and file formats remain unstable, and no system-changing workflow is supported yet.
 
 ## One-sentence position
 
@@ -93,8 +92,8 @@ silently enable an adjacent capability merely because the author prefers it.
 
 ## Intended lifecycle
 
-The lifecycle below is the target product model. `Inspect`, profile validation, and
-`Plan` exist in the current read-only CLI; the remaining stages are not available:
+The lifecycle below is the product model. The current scalar GNOME slice implements
+each stage; input, extension, package, and arbitrary-file resources remain unavailable:
 
 1. **Inspect** — collect relevant system facts without mutation.
 2. **Compare** — resolve a selected profile against observed state and support.

@@ -6,17 +6,16 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 > [!WARNING]
-> DeskCompat is an early pre-alpha project. The current CLI is read-only: it can
-> inspect the machine, report conflicts, validate a profile, and produce an
-> explainable deterministic plan.
-> There is no packaged installer or supported system-changing workflow yet.
+> DeskCompat is an early pre-alpha project with no packaged installer or supported
+> release. Its first mutating slice is limited to four allowlisted GNOME workspace
+> and window-control settings. Do not use it on a machine you cannot recover.
 
 | Capability | Current status |
 | --- | --- |
 | Host and conflict diagnosis | Implemented, read-only |
 | Strict profile validation | Implemented, `v1alpha1` |
-| GNOME workspace/window planning | Implemented, read-only |
-| Apply, ownership, undo, and recovery | Not implemented |
+| GNOME workspace/window planning | Implemented |
+| Apply, ownership, status, revert, and recovery | Experimental scalar GNOME slice |
 | Keyboard, pointer, gestures, and MCP | Not implemented |
 
 DeskCompat is intended for people who prefer Linux but have years of macOS habits
@@ -68,8 +67,9 @@ DeskCompat is focused on that coordination and safety boundary.
 The initial target is an **existing Ubuntu GNOME installation** used by someone
 who wants selected macOS-like interaction behavior without replacing their desktop.
 
-The first useful profile is deliberately narrow. Read-only planning currently models
-GNOME workspaces and window controls. Later protected milestones will add:
+The first useful profile is deliberately narrow. Planning and the experimental
+transaction lifecycle currently model four scalar GNOME workspace/window-control
+resources. Later protected milestones will add:
 
 - keyboard modifier and common shortcut behavior;
 - workspace switching and overview behavior;
@@ -86,18 +86,18 @@ remain possible future adapters—not promises for the first release.
 
 ## Status and source checkout
 
-This repository is an implementation-stage pre-alpha. Its current commands are
-read-only, but it should not yet be treated as a system configuration product.
+This repository is an implementation-stage pre-alpha. It should not yet be treated as
+a supported system configuration product.
 
 ```bash
 git clone https://github.com/lamosty/deskcompat.git
 cd deskcompat
 ```
 
-That checks out the source only. There are intentionally no packaged-installer,
-apply, or privileged system-setup instructions yet.
+That checks out the source only. There are intentionally no packaged-installer or
+privileged input-setup instructions yet.
 
-### Run the read-only development preview
+### Run the development preview
 
 Use the Bun version in `.bun-version`, and run the CLI from the graphical GNOME
 Wayland session being inspected:
@@ -109,12 +109,35 @@ bun run deskcompat profile validate --profile profiles/macos-essentials.toml
 bun run deskcompat plan --profile profiles/macos-essentials.toml --only windowControls
 ```
 
-Add `--json` to any of the three commands for the versioned automation envelope.
-These commands do not change desktop configuration or write DeskCompat state. The
-current executable contains no `apply`, `sudo`, keyboard-remapping, gesture-management,
-or MCP path. JSON schemas are pre-alpha and may change. Plan and profile JSON is
+`doctor`, profile validation, `plan`, `status`, and `history` do not change desktop
+configuration. Planning an unowned setting that already matches produces an explicit
+`resource.adopt` operation rather than silently claiming it. To exercise the
+experimental lifecycle, save and review the exact JSON plan first:
+
+```bash
+bun run deskcompat plan --profile profiles/macos-essentials.toml \
+  --only windowControls --json > plan.json
+bun run deskcompat apply --plan plan.json
+bun run deskcompat status
+bun run deskcompat history
+bun run deskcompat revert --transaction tx_<id>
+# For an interrupted/failed transaction only:
+bun run deskcompat recover --transaction tx_<id>
+```
+
+Apply accepts only a current, integrity-valid plan from the same DeskCompat build. It
+binds the persisted copy to the invoking user/session, rechecks host facts, ownership,
+and resource preconditions under a lock, records exact before-state privately, and
+verifies each effect. Revert uses compare-before-write and reports drift instead of
+overwriting it. This is a durable sequence with compensating operations—not an atomic
+desktop transaction.
+
+Add `--json` for the versioned automation envelope. The current executable contains
+no `sudo`, keyboard-remapping, gesture-management, package-management, or MCP path.
+JSON schemas are pre-alpha and may change. Plan and profile JSON is
 **local operational data**, not a share-safe diagnostic bundle: review it before
-sharing because it can contain selected settings, profile values, and stable digests.
+sharing because it can contain selected settings, raw allowlisted GVariant values,
+profile values, and stable digests.
 
 Host inspection must run inside the graphical Ubuntu session. An intentional support
 blocker exits with code `3`; when invoked through `bun run`, Bun may describe that
@@ -129,8 +152,8 @@ useful on real customized systems.
 - [x] Implement allowlisted read-only inspection with human and JSON output.
 - [x] Generate deterministic plans and flag conflicts or unsupported state.
 - [x] Runtime-validate a narrow Ubuntu GNOME/macOS-muscle-memory profile.
-- [ ] Add guarded, capability-by-capability apply with snapshots and verification.
-- [ ] Add conservative undo and drift reporting.
+- [x] Add guarded scalar GNOME apply with snapshots and verification.
+- [x] Add conservative transaction revert and drift reporting for that slice.
 - [ ] Stabilize the CLI automation contract and evaluate a thin MCP adapter.
 - [ ] Consider additional profiles and platforms only after the core is reliable.
 
