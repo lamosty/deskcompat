@@ -1,4 +1,4 @@
-import { buildPlan } from "@deskcompat/core";
+import { buildPlan, TransactionStore } from "@deskcompat/core";
 import type { CliResult, ModuleId, Plan } from "@deskcompat/schema";
 import { evaluateSupport, inspectLiveEnvironment, resolveProfile } from "@deskcompat/ubuntu-gnome";
 import { result } from "../output/render.ts";
@@ -13,6 +13,9 @@ export async function plan(
   const { facts, settings } = await inspectLiveEnvironment();
   const platformDiagnostics = evaluateSupport(facts);
   const resolved = resolveProfile(profile, only);
+  // @decision Planning reads existing ownership but never initializes the state
+  // directory. A first plan is therefore target- and application-state read-only.
+  const ownership = await new TransactionStore().readOwnership();
   const supportDiagnostics = [...platformDiagnostics, ...resolved.diagnostics];
   const hostSupported = !platformDiagnostics.some(({ severity }) => severity === "blocker");
   const selectedModules = [...(only ?? new Set(Object.keys(profile.spec.modules) as ModuleId[]))];
@@ -22,6 +25,7 @@ export async function plan(
     desiredSettings: resolved.desiredSettings,
     selectedModules,
     inspector: settings,
+    ownership: ownership.resources,
     supportDiagnostics,
     allowInspection: hostSupported,
     toolVersion: DESKCOMPAT_VERSION,

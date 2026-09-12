@@ -1,41 +1,62 @@
-import type { DesiredSetting } from "@deskcompat/core";
-import type { Diagnostic, ModuleId, Profile } from "@deskcompat/schema";
+import type { DesiredSetting, GSettingsTarget } from "@deskcompat/core";
+import {
+  type Diagnostic,
+  type GSettingsResourceId,
+  GSettingsResourceIdSchema,
+  type ModuleId,
+  type Profile,
+} from "@deskcompat/schema";
 
 export interface ResolvedProfile {
   readonly desiredSettings: readonly DesiredSetting[];
   readonly diagnostics: readonly Diagnostic[];
 }
 
-const targets = {
-  dynamicWorkspaces: {
+/**
+ * @constraint This is the only source of GNOME schema/key/path mappings used by
+ * mutating code. Resource identifiers are part of the persisted plan, but the
+ * executable details stay compiled into this registry so a plan cannot redirect
+ * a mutation to an arbitrary dconf path.
+ */
+export const GSETTINGS_TARGETS = Object.freeze({
+  "gsettings:org.gnome.mutter:dynamic-workspaces": Object.freeze({
     resourceId: "gsettings:org.gnome.mutter:dynamic-workspaces",
     schema: "org.gnome.mutter",
     key: "dynamic-workspaces",
     dconfPath: "/org/gnome/mutter/dynamic-workspaces",
     valueType: "boolean",
-  },
-  workspaceCount: {
+  }),
+  "gsettings:org.gnome.desktop.wm.preferences:num-workspaces": Object.freeze({
     resourceId: "gsettings:org.gnome.desktop.wm.preferences:num-workspaces",
     schema: "org.gnome.desktop.wm.preferences",
     key: "num-workspaces",
     dconfPath: "/org/gnome/desktop/wm/preferences/num-workspaces",
     valueType: "int32",
-  },
-  workspacesOnlyOnPrimary: {
+  }),
+  "gsettings:org.gnome.mutter:workspaces-only-on-primary": Object.freeze({
     resourceId: "gsettings:org.gnome.mutter:workspaces-only-on-primary",
     schema: "org.gnome.mutter",
     key: "workspaces-only-on-primary",
     dconfPath: "/org/gnome/mutter/workspaces-only-on-primary",
     valueType: "boolean",
-  },
-  buttonLayout: {
+  }),
+  "gsettings:org.gnome.desktop.wm.preferences:button-layout": Object.freeze({
     resourceId: "gsettings:org.gnome.desktop.wm.preferences:button-layout",
     schema: "org.gnome.desktop.wm.preferences",
     key: "button-layout",
     dconfPath: "/org/gnome/desktop/wm/preferences/button-layout",
     valueType: "string",
-  },
-} as const;
+  }),
+}) satisfies Readonly<Record<GSettingsResourceId, GSettingsTarget>>;
+
+export type CompiledGSettingsTarget = (typeof GSETTINGS_TARGETS)[GSettingsResourceId];
+
+/** Resolve a persisted resource identifier to an immutable, compiled target. */
+export function resolveGSettingsTarget(resourceId: unknown): CompiledGSettingsTarget | undefined {
+  const parsed = GSettingsResourceIdSchema.safeParse(resourceId);
+  if (!parsed.success) return undefined;
+  return GSETTINGS_TARGETS[parsed.data];
+}
 
 export function resolveProfile(profile: Profile, only?: ReadonlySet<ModuleId>): ResolvedProfile {
   const desiredSettings: DesiredSetting[] = [];
@@ -48,13 +69,13 @@ export function resolveProfile(profile: Profile, only?: ReadonlySet<ModuleId>): 
       desiredSettings.push(
         {
           moduleId: "workspaces",
-          target: targets.dynamicWorkspaces,
+          target: GSETTINGS_TARGETS["gsettings:org.gnome.mutter:dynamic-workspaces"],
           desired: { type: "boolean", value: false },
           risk: "desktop-session",
         },
         {
           moduleId: "workspaces",
-          target: targets.workspaceCount,
+          target: GSETTINGS_TARGETS["gsettings:org.gnome.desktop.wm.preferences:num-workspaces"],
           desired: { type: "int32", value: workspaces.count },
           risk: "desktop-session",
         },
@@ -62,7 +83,7 @@ export function resolveProfile(profile: Profile, only?: ReadonlySet<ModuleId>): 
       if (workspaces.allMonitors !== undefined) {
         desiredSettings.push({
           moduleId: "workspaces",
-          target: targets.workspacesOnlyOnPrimary,
+          target: GSETTINGS_TARGETS["gsettings:org.gnome.mutter:workspaces-only-on-primary"],
           desired: { type: "boolean", value: !workspaces.allMonitors },
           risk: "desktop-session",
         });
@@ -84,7 +105,7 @@ export function resolveProfile(profile: Profile, only?: ReadonlySet<ModuleId>): 
     if (windowControls.state === "managed") {
       desiredSettings.push({
         moduleId: "windowControls",
-        target: targets.buttonLayout,
+        target: GSETTINGS_TARGETS["gsettings:org.gnome.desktop.wm.preferences:button-layout"],
         desired: {
           type: "string",
           value: "close,minimize,maximize:",

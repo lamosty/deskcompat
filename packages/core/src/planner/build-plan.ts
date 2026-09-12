@@ -2,65 +2,37 @@ import {
   type Diagnostic,
   type GSettingsOperation,
   GSettingsOperationSchema,
+  MAX_PLAN_TTL_MS,
   type ObservedSetting,
+  type Operation,
   PLAN_API_VERSION,
   type Plan,
   PlanSchema,
   ResolvedResourceSchema,
+  type ResourceAdoptOperation,
+  ResourceAdoptOperationSchema,
   SUPPORT_TARGET,
 } from "@deskcompat/schema";
 import { sha256 } from "../canonical-json.ts";
+import {
+  planFactsDigest,
+  planIncludesInputCapabilities,
+  selectedProfileDigest,
+} from "./fingerprints.ts";
 import {
   planId as calculatePlanId,
   semanticDigest as calculateSemanticDigest,
   operationId,
   verifyPlanIntegrity,
 } from "./plan-integrity.ts";
-import type { DesiredSetting, PlannerInput } from "./types.ts";
+import type { DesiredSetting, PlannerInput, PlannerOwnership } from "./types.ts";
 
 const DEFAULT_PLAN_TTL_MS = 15 * 60 * 1_000;
 const compareText = (left: string, right: string): number =>
   left === right ? 0 : left < right ? -1 : 1;
 
-function relevantFacts(input: PlannerInput, includeInputCapabilities: boolean): unknown {
-  const relevantCapabilityIds = includeInputCapabilities
-    ? new Set([
-        "dconf",
-        "gnome-shell",
-        "gsettings",
-        "session-bus",
-        "keyd",
-        "xremap",
-        "input-remapper",
-      ])
-    : new Set(["dconf", "gnome-shell", "gsettings", "session-bus"]);
-  return {
-    platform: input.facts.platform,
-    capabilities: input.facts.capabilities
-      .filter(({ id }) => relevantCapabilityIds.has(id))
-      .map(({ id, available }) => ({ id, available }))
-      .sort((left, right) => compareText(left.id, right.id)),
-    conflictCodes: includeInputCapabilities
-      ? input.facts.conflicts.map(({ code }) => code).sort(compareText)
-      : [],
-  };
-}
-
 function diagnosticSortKey(diagnostic: Diagnostic): string {
   return [diagnostic.code, diagnostic.subject ?? "", diagnostic.reasonCode ?? ""].join(":");
-}
-
-function selectedProfileIntent(input: PlannerInput, scope: readonly string[]): unknown {
-  return {
-    apiVersion: input.profile.apiVersion,
-    kind: input.profile.kind,
-    modules: Object.fromEntries(
-      scope.map((moduleId) => [
-        moduleId,
-        input.profile.spec.modules[moduleId as keyof typeof input.profile.spec.modules] ?? null,
-      ]),
-    ),
-  };
 }
 
 function operationFor(setting: DesiredSetting, observed: ObservedSetting): GSettingsOperation {
@@ -80,10 +52,63 @@ function operationFor(setting: DesiredSetting, observed: ObservedSetting): GSett
     id: operationId(identity),
     privilege: "user",
     risk: setting.risk,
-    rollbackQuality: "not-implemented",
+    rollbackQuality: "exact-if-unchanged",
     dependsOn: [],
     expectedBeforeDigest: observed.digest,
   });
+}
+
+function adoptionOperationFor(
+  setting: DesiredSetting,
+  observed: ObservedSetting,
+): ResourceAdoptOperation {
+  if (observed.status === "unavailable") {
+    throw new TypeError("Cannot create an adoption operation for an unavailable setting");
+  }
+  const identity = {
+    kind: "resource.adopt" as const,
+    moduleId: setting.moduleId,
+    resourceId: setting.target.resourceId,
+    desired: setting.desired,
+  };
+  return ResourceAdoptOperationSchema.parse({
+    ...identity,
+    id: operationId(identity),
+    privilege: "user",
+    risk: "none",
+    rollbackQuality: "exact-if-unchanged",
+    dependsOn: [],
+    expectedBeforeDigest: observed.digest,
+  });
+}
+
+function publicObservation(observed: Exclude<ObservedSetting, { status: "unavailable" }>) {
+  return observed.status === "present"
+    ? {
+        status: observed.status,
+        effectiveRaw: observed.effectiveRaw,
+        effective: observed.effective,
+        storedRaw: observed.storedRaw,
+        writable: observed.writable,
+        digest: observed.digest,
+      }
+    : {
+        status: observed.status,
+        effectiveRaw: observed.effectiveRaw,
+        effective: observed.effective,
+        writable: observed.writable,
+        digest: observed.digest,
+      };
+}
+
+function ownershipAssertion(ownership: PlannerOwnership | undefined) {
+  return ownership
+    ? {
+        status: "owned" as const,
+        moduleId: ownership.moduleId,
+        appliedDigest: ownership.appliedDigest,
+      }
+    : { status: "unowned" as const };
 }
 
 function diagnosticForUnavailable(setting: DesiredSetting, observed: ObservedSetting): Diagnostic {
@@ -111,6 +136,27 @@ function diagnosticForUnwritable(setting: DesiredSetting): Diagnostic {
   };
 }
 
+function diagnosticForOwnershipConflict(
+  setting: DesiredSetting,
+  code: "RESOURCE_OWNERSHIP_DRIFT" | "RESOURCE_OWNED_BY_ANOTHER_MODULE",
+  ownership: PlannerOwnership,
+): Diagnostic {
+  const wrongModule = code === "RESOURCE_OWNED_BY_ANOTHER_MODULE";
+  return {
+    code,
+    severity: "blocker",
+    subject: setting.target.resourceId,
+    reasonCode: wrongModule ? "MODULE_MISMATCH" : "APPLIED_STATE_CHANGED",
+    relatedSubjects: [setting.moduleId, ownership.moduleId],
+    message: wrongModule
+      ? `${setting.target.resourceId} is owned by module ${ownership.moduleId}, not ${setting.moduleId}.`
+      : `${setting.target.resourceId} changed after DeskCompat last applied it.`,
+    remediation: wrongModule
+      ? "Resolve the ownership record before applying this module."
+      : "Review the external change, then explicitly reconcile or release ownership.",
+  };
+}
+
 /**
  * @decision Planning is a pure description over explicit observations. The function
  * performs no mutation. The semantic digest excludes timestamps, while planId covers
@@ -118,25 +164,37 @@ function diagnosticForUnwritable(setting: DesiredSetting): Diagnostic {
  * each independently created plan remains a distinct immutable artifact.
  */
 export async function buildPlan(input: PlannerInput): Promise<Plan> {
+  const ttlMs = input.ttlMs ?? DEFAULT_PLAN_TTL_MS;
+  if (!Number.isSafeInteger(ttlMs) || ttlMs <= 0 || ttlMs > MAX_PLAN_TTL_MS) {
+    throw new RangeError(`ttlMs must be an integer between 1 and ${MAX_PLAN_TTL_MS}`);
+  }
   const scope = [...new Set(input.selectedModules)].sort(compareText);
-  const keyboardConfiguration = input.profile.spec.modules.keyboard;
-  const includeInputCapabilities =
-    scope.includes("keyboard") &&
-    keyboardConfiguration !== undefined &&
-    keyboardConfiguration.state !== "unmanaged";
-  const operations: GSettingsOperation[] = [];
+  const includeInputCapabilities = planIncludesInputCapabilities(input.profile, scope);
+  const operations: Operation[] = [];
   const resources: Plan["resources"] = [];
   const pushResource = (resource: unknown): void => {
     resources.push(ResolvedResourceSchema.parse(resource));
   };
-  const blockers = input.supportDiagnostics.filter(({ severity }) => severity === "blocker");
-  const warnings = [
-    ...input.supportDiagnostics.filter(({ severity }) => severity !== "blocker"),
+  const diagnostics = [
+    ...input.supportDiagnostics,
     ...(includeInputCapabilities ? input.facts.conflicts : []),
   ];
+  if (diagnostics.some(({ severity }) => severity !== "blocker" && severity !== "warning")) {
+    throw new TypeError("Plans accept only blocker and warning diagnostics");
+  }
+  const blockers = diagnostics.filter(({ severity }) => severity === "blocker");
+  const warnings = diagnostics.filter(({ severity }) => severity === "warning");
   let unchanged = 0;
+  let adoptions = 0;
   let unavailable = 0;
   let skipped = 0;
+
+  const ownershipByResource = new Map<string, PlannerOwnership>();
+  const duplicateOwnership = new Set<string>();
+  for (const ownership of input.ownership ?? []) {
+    if (ownershipByResource.has(ownership.resourceId)) duplicateOwnership.add(ownership.resourceId);
+    else ownershipByResource.set(ownership.resourceId, ownership);
+  }
 
   const groupedSettings = new Map<DesiredSetting["target"]["resourceId"], DesiredSetting[]>();
   for (const setting of input.desiredSettings) {
@@ -154,23 +212,31 @@ export async function buildPlan(input: PlannerInput): Promise<Plan> {
     );
     const moduleIds = group.map(({ moduleId }) => moduleId);
     const desired = group.map((setting) => setting.desired);
+    const currentOwnership = ownershipByResource.get(resourceId);
+    const ownership = ownershipAssertion(currentOwnership);
 
-    if (group.length > 1) {
+    if (group.length > 1 || duplicateOwnership.has(resourceId)) {
       skipped += 1;
+      const reasonCode =
+        group.length > 1 ? "DUPLICATE_RESOURCE_OWNER" : "DUPLICATE_OWNERSHIP_RECORDS";
       blockers.push({
-        code: "DUPLICATE_RESOURCE_OWNER",
+        code: reasonCode,
         severity: "blocker",
         subject: resourceId,
         reasonCode: "MULTIPLE_MODULES",
         relatedSubjects: moduleIds,
-        message: `More than one module claims ${resourceId}.`,
+        message:
+          group.length > 1
+            ? `More than one module claims ${resourceId}.`
+            : `More than one ownership record exists for ${resourceId}.`,
       });
       pushResource({
         moduleIds,
         resourceId,
         disposition: "skipped",
+        ownership,
         desired,
-        observed: { status: "skipped", reasonCode: "DUPLICATE_RESOURCE_OWNER" },
+        observed: { status: "skipped", reasonCode },
       });
       continue;
     }
@@ -183,6 +249,7 @@ export async function buildPlan(input: PlannerInput): Promise<Plan> {
         moduleIds,
         resourceId,
         disposition: "skipped",
+        ownership,
         desired,
         observed: { status: "skipped", reasonCode: "UNSUPPORTED_HOST" },
       });
@@ -196,6 +263,7 @@ export async function buildPlan(input: PlannerInput): Promise<Plan> {
         moduleIds,
         resourceId,
         disposition: "unavailable",
+        ownership,
         desired,
         observed: { status: "unavailable", reasonCode: observed.reasonCode },
       });
@@ -203,19 +271,64 @@ export async function buildPlan(input: PlannerInput): Promise<Plan> {
       continue;
     }
 
+    const observedResource = publicObservation(observed);
+    if (currentOwnership && currentOwnership.moduleId !== setting.moduleId) {
+      skipped += 1;
+      blockers.push(
+        diagnosticForOwnershipConflict(
+          setting,
+          "RESOURCE_OWNED_BY_ANOTHER_MODULE",
+          currentOwnership,
+        ),
+      );
+      pushResource({
+        moduleIds,
+        resourceId,
+        disposition: "skipped",
+        ownership,
+        desired,
+        observed: observedResource,
+      });
+      continue;
+    }
+    if (currentOwnership && currentOwnership.appliedDigest !== observed.digest) {
+      skipped += 1;
+      blockers.push(
+        diagnosticForOwnershipConflict(setting, "RESOURCE_OWNERSHIP_DRIFT", currentOwnership),
+      );
+      pushResource({
+        moduleIds,
+        resourceId,
+        disposition: "skipped",
+        ownership,
+        desired,
+        observed: observedResource,
+      });
+      continue;
+    }
+
     if (sha256(observed.effective) === sha256(setting.desired)) {
+      if (!currentOwnership) {
+        adoptions += 1;
+        pushResource({
+          moduleIds,
+          resourceId,
+          disposition: "adopt",
+          ownership,
+          desired,
+          observed: observedResource,
+        });
+        operations.push(adoptionOperationFor(setting, observed));
+        continue;
+      }
       unchanged += 1;
       pushResource({
         moduleIds,
         resourceId,
         disposition: "unchanged",
+        ownership,
         desired,
-        observed: {
-          status: observed.status,
-          effective: observed.effective,
-          writable: observed.writable,
-          digest: observed.digest,
-        },
+        observed: observedResource,
       });
       continue;
     }
@@ -225,6 +338,7 @@ export async function buildPlan(input: PlannerInput): Promise<Plan> {
         moduleIds,
         resourceId,
         disposition: "unavailable",
+        ownership,
         desired,
         observed: { status: "unavailable", reasonCode: "SETTING_NOT_WRITABLE" },
       });
@@ -235,13 +349,9 @@ export async function buildPlan(input: PlannerInput): Promise<Plan> {
       moduleIds,
       resourceId,
       disposition: "change",
+      ownership,
       desired,
-      observed: {
-        status: observed.status,
-        effective: observed.effective,
-        writable: observed.writable,
-        digest: observed.digest,
-      },
+      observed: observedResource,
     });
     operations.push(operationFor(setting, observed));
   }
@@ -251,8 +361,8 @@ export async function buildPlan(input: PlannerInput): Promise<Plan> {
   warnings.sort((left, right) => compareText(diagnosticSortKey(left), diagnosticSortKey(right)));
   resources.sort((left, right) => compareText(left.resourceId, right.resourceId));
 
-  const profileDigest = sha256(selectedProfileIntent(input, scope));
-  const factsDigest = sha256(relevantFacts(input, includeInputCapabilities));
+  const profileDigest = selectedProfileDigest(input.profile, scope);
+  const factsDigest = planFactsDigest(input.facts, includeInputCapabilities);
   const planBody = {
     apiVersion: PLAN_API_VERSION,
     profileDigest,
@@ -264,10 +374,17 @@ export async function buildPlan(input: PlannerInput): Promise<Plan> {
     operations,
     blockers,
     warnings,
-    summary: { changes: operations.length, unchanged, unavailable, skipped },
+    summary: {
+      adoptions,
+      changes: operations.filter(({ kind }) => kind === "gsettings.set").length,
+      unchanged,
+      unavailable,
+      skipped,
+    },
   };
   const createdAt = input.now ?? new Date();
-  const expiresAt = new Date(createdAt.getTime() + (input.ttlMs ?? DEFAULT_PLAN_TTL_MS));
+  if (Number.isNaN(createdAt.getTime())) throw new RangeError("now must be a valid date");
+  const expiresAt = new Date(createdAt.getTime() + ttlMs);
   // @decision Human-facing diagnostic prose is excluded from semantic identity. Copy
   // edits preserve semanticDigest, while planId still changes with the full artifact.
   const semanticDigest = calculateSemanticDigest(planBody);

@@ -20,10 +20,11 @@ async function runCli(
 }
 
 describe("CLI", () => {
-  test("advertises its read-only boundary", async () => {
+  test("advertises its guarded mutation boundary", async () => {
     const output = await runCli(["--help"]);
     expect(output.exitCode).toBe(0);
-    expect(output.stdout).toContain("This pre-alpha build is read-only");
+    expect(output.stdout).toContain("Planning is read-only");
+    expect(output.stdout).toContain("only four allowlisted scalar GNOME settings");
     expect(output.stderr).toBe("");
   });
 

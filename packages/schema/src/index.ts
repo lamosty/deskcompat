@@ -5,3 +5,4 @@ export * from "./observed.ts";
 export * from "./operations.ts";
 export * from "./plan.ts";
 export * from "./profile.ts";
+export * from "./transaction.ts";

@@ -62,10 +62,55 @@
               "disposition": {
                 "type": "string",
                 "enum": [
+                  "adopt",
                   "change",
                   "unchanged",
                   "unavailable",
                   "skipped"
+                ]
+              },
+              "ownership": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string",
+                        "const": "unowned"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string",
+                        "const": "owned"
+                      },
+                      "moduleId": {
+                        "type": "string",
+                        "enum": [
+                          "workspaces",
+                          "windowControls",
+                          "keyboard"
+                        ]
+                      },
+                      "appliedDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "moduleId",
+                      "appliedDigest"
+                    ],
+                    "additionalProperties": false
+                  }
                 ]
               },
               "resourceId": {
@@ -101,10 +146,59 @@
                     "properties": {
                       "status": {
                         "type": "string",
-                        "enum": [
-                          "present",
-                          "inherited"
-                        ]
+                        "const": "present"
+                      },
+                      "effectiveRaw": {
+                        "type": "string"
+                      },
+                      "effective": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "boolean"
+                          },
+                          "value": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "value"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "storedRaw": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "writable": {
+                        "type": "boolean"
+                      },
+                      "digest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "effectiveRaw",
+                      "effective",
+                      "storedRaw",
+                      "writable",
+                      "digest"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string",
+                        "const": "inherited"
+                      },
+                      "effectiveRaw": {
+                        "type": "string"
                       },
                       "effective": {
                         "type": "object",
@@ -133,6 +227,7 @@
                     },
                     "required": [
                       "status",
+                      "effectiveRaw",
                       "effective",
                       "writable",
                       "digest"
@@ -166,6 +261,7 @@
             "required": [
               "moduleIds",
               "disposition",
+              "ownership",
               "resourceId",
               "desired",
               "observed"
@@ -190,10 +286,55 @@
               "disposition": {
                 "type": "string",
                 "enum": [
+                  "adopt",
                   "change",
                   "unchanged",
                   "unavailable",
                   "skipped"
+                ]
+              },
+              "ownership": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string",
+                        "const": "unowned"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string",
+                        "const": "owned"
+                      },
+                      "moduleId": {
+                        "type": "string",
+                        "enum": [
+                          "workspaces",
+                          "windowControls",
+                          "keyboard"
+                        ]
+                      },
+                      "appliedDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "moduleId",
+                      "appliedDigest"
+                    ],
+                    "additionalProperties": false
+                  }
                 ]
               },
               "resourceId": {
@@ -230,10 +371,61 @@
                     "properties": {
                       "status": {
                         "type": "string",
-                        "enum": [
-                          "present",
-                          "inherited"
-                        ]
+                        "const": "present"
+                      },
+                      "effectiveRaw": {
+                        "type": "string"
+                      },
+                      "effective": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "int32"
+                          },
+                          "value": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 36
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "value"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "storedRaw": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "writable": {
+                        "type": "boolean"
+                      },
+                      "digest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "effectiveRaw",
+                      "effective",
+                      "storedRaw",
+                      "writable",
+                      "digest"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string",
+                        "const": "inherited"
+                      },
+                      "effectiveRaw": {
+                        "type": "string"
                       },
                       "effective": {
                         "type": "object",
@@ -264,6 +456,7 @@
                     },
                     "required": [
                       "status",
+                      "effectiveRaw",
                       "effective",
                       "writable",
                       "digest"
@@ -297,6 +490,7 @@
             "required": [
               "moduleIds",
               "disposition",
+              "ownership",
               "resourceId",
               "desired",
               "observed"
@@ -321,10 +515,55 @@
               "disposition": {
                 "type": "string",
                 "enum": [
+                  "adopt",
                   "change",
                   "unchanged",
                   "unavailable",
                   "skipped"
+                ]
+              },
+              "ownership": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string",
+                        "const": "unowned"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string",
+                        "const": "owned"
+                      },
+                      "moduleId": {
+                        "type": "string",
+                        "enum": [
+                          "workspaces",
+                          "windowControls",
+                          "keyboard"
+                        ]
+                      },
+                      "appliedDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "moduleId",
+                      "appliedDigest"
+                    ],
+                    "additionalProperties": false
+                  }
                 ]
               },
               "resourceId": {
@@ -359,10 +598,59 @@
                     "properties": {
                       "status": {
                         "type": "string",
-                        "enum": [
-                          "present",
-                          "inherited"
-                        ]
+                        "const": "present"
+                      },
+                      "effectiveRaw": {
+                        "type": "string"
+                      },
+                      "effective": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "boolean"
+                          },
+                          "value": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "value"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "storedRaw": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "writable": {
+                        "type": "boolean"
+                      },
+                      "digest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "effectiveRaw",
+                      "effective",
+                      "storedRaw",
+                      "writable",
+                      "digest"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string",
+                        "const": "inherited"
+                      },
+                      "effectiveRaw": {
+                        "type": "string"
                       },
                       "effective": {
                         "type": "object",
@@ -391,6 +679,7 @@
                     },
                     "required": [
                       "status",
+                      "effectiveRaw",
                       "effective",
                       "writable",
                       "digest"
@@ -424,6 +713,7 @@
             "required": [
               "moduleIds",
               "disposition",
+              "ownership",
               "resourceId",
               "desired",
               "observed"
@@ -448,10 +738,55 @@
               "disposition": {
                 "type": "string",
                 "enum": [
+                  "adopt",
                   "change",
                   "unchanged",
                   "unavailable",
                   "skipped"
+                ]
+              },
+              "ownership": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string",
+                        "const": "unowned"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string",
+                        "const": "owned"
+                      },
+                      "moduleId": {
+                        "type": "string",
+                        "enum": [
+                          "workspaces",
+                          "windowControls",
+                          "keyboard"
+                        ]
+                      },
+                      "appliedDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "moduleId",
+                      "appliedDigest"
+                    ],
+                    "additionalProperties": false
+                  }
                 ]
               },
               "resourceId": {
@@ -487,10 +822,59 @@
                     "properties": {
                       "status": {
                         "type": "string",
-                        "enum": [
-                          "present",
-                          "inherited"
-                        ]
+                        "const": "present"
+                      },
+                      "effectiveRaw": {
+                        "type": "string"
+                      },
+                      "effective": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "string"
+                          },
+                          "value": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "value"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "storedRaw": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "writable": {
+                        "type": "boolean"
+                      },
+                      "digest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "effectiveRaw",
+                      "effective",
+                      "storedRaw",
+                      "writable",
+                      "digest"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string",
+                        "const": "inherited"
+                      },
+                      "effectiveRaw": {
+                        "type": "string"
                       },
                       "effective": {
                         "type": "object",
@@ -519,6 +903,7 @@
                     },
                     "required": [
                       "status",
+                      "effectiveRaw",
                       "effective",
                       "writable",
                       "digest"
@@ -552,6 +937,7 @@
             "required": [
               "moduleIds",
               "disposition",
+              "ownership",
               "resourceId",
               "desired",
               "observed"
@@ -564,306 +950,614 @@
     "operations": {
       "type": "array",
       "items": {
-        "oneOf": [
+        "anyOf": [
           {
-            "type": "object",
-            "properties": {
-              "kind": {
-                "type": "string",
-                "const": "gsettings.set"
-              },
-              "id": {
-                "type": "string",
-                "pattern": "^op_[a-f0-9]{64}$"
-              },
-              "privilege": {
-                "type": "string",
-                "const": "user"
-              },
-              "dependsOn": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "pattern": "^op_[a-f0-9]{64}$"
-                }
-              },
-              "expectedBeforeDigest": {
-                "type": "string",
-                "pattern": "^[a-f0-9]{64}$"
-              },
-              "moduleId": {
-                "type": "string",
-                "const": "workspaces"
-              },
-              "resourceId": {
-                "type": "string",
-                "const": "gsettings:org.gnome.mutter:dynamic-workspaces"
-              },
-              "desired": {
+            "oneOf": [
+              {
                 "type": "object",
                 "properties": {
-                  "type": {
+                  "id": {
                     "type": "string",
-                    "const": "boolean"
+                    "pattern": "^op_[a-f0-9]{64}$"
                   },
-                  "value": {
-                    "type": "boolean",
-                    "const": false
+                  "privilege": {
+                    "type": "string",
+                    "const": "user"
+                  },
+                  "dependsOn": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^op_[a-f0-9]{64}$"
+                    }
+                  },
+                  "expectedBeforeDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "gsettings.set"
+                  },
+                  "moduleId": {
+                    "type": "string",
+                    "const": "workspaces"
+                  },
+                  "resourceId": {
+                    "type": "string",
+                    "const": "gsettings:org.gnome.mutter:dynamic-workspaces"
+                  },
+                  "desired": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "boolean"
+                      },
+                      "value": {
+                        "type": "boolean",
+                        "const": false
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "value"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "risk": {
+                    "type": "string",
+                    "const": "desktop-session"
+                  },
+                  "rollbackQuality": {
+                    "type": "string",
+                    "const": "exact-if-unchanged"
                   }
                 },
                 "required": [
-                  "type",
-                  "value"
+                  "id",
+                  "privilege",
+                  "dependsOn",
+                  "expectedBeforeDigest",
+                  "kind",
+                  "moduleId",
+                  "resourceId",
+                  "desired",
+                  "risk",
+                  "rollbackQuality"
                 ],
                 "additionalProperties": false
               },
-              "risk": {
-                "type": "string",
-                "const": "desktop-session"
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^op_[a-f0-9]{64}$"
+                  },
+                  "privilege": {
+                    "type": "string",
+                    "const": "user"
+                  },
+                  "dependsOn": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^op_[a-f0-9]{64}$"
+                    }
+                  },
+                  "expectedBeforeDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "gsettings.set"
+                  },
+                  "moduleId": {
+                    "type": "string",
+                    "const": "workspaces"
+                  },
+                  "resourceId": {
+                    "type": "string",
+                    "const": "gsettings:org.gnome.desktop.wm.preferences:num-workspaces"
+                  },
+                  "desired": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "int32"
+                      },
+                      "value": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 36
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "value"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "risk": {
+                    "type": "string",
+                    "const": "desktop-session"
+                  },
+                  "rollbackQuality": {
+                    "type": "string",
+                    "const": "exact-if-unchanged"
+                  }
+                },
+                "required": [
+                  "id",
+                  "privilege",
+                  "dependsOn",
+                  "expectedBeforeDigest",
+                  "kind",
+                  "moduleId",
+                  "resourceId",
+                  "desired",
+                  "risk",
+                  "rollbackQuality"
+                ],
+                "additionalProperties": false
               },
-              "rollbackQuality": {
-                "type": "string",
-                "const": "not-implemented"
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^op_[a-f0-9]{64}$"
+                  },
+                  "privilege": {
+                    "type": "string",
+                    "const": "user"
+                  },
+                  "dependsOn": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^op_[a-f0-9]{64}$"
+                    }
+                  },
+                  "expectedBeforeDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "gsettings.set"
+                  },
+                  "moduleId": {
+                    "type": "string",
+                    "const": "workspaces"
+                  },
+                  "resourceId": {
+                    "type": "string",
+                    "const": "gsettings:org.gnome.mutter:workspaces-only-on-primary"
+                  },
+                  "desired": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "boolean"
+                      },
+                      "value": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "value"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "risk": {
+                    "type": "string",
+                    "const": "desktop-session"
+                  },
+                  "rollbackQuality": {
+                    "type": "string",
+                    "const": "exact-if-unchanged"
+                  }
+                },
+                "required": [
+                  "id",
+                  "privilege",
+                  "dependsOn",
+                  "expectedBeforeDigest",
+                  "kind",
+                  "moduleId",
+                  "resourceId",
+                  "desired",
+                  "risk",
+                  "rollbackQuality"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^op_[a-f0-9]{64}$"
+                  },
+                  "privilege": {
+                    "type": "string",
+                    "const": "user"
+                  },
+                  "dependsOn": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^op_[a-f0-9]{64}$"
+                    }
+                  },
+                  "expectedBeforeDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "gsettings.set"
+                  },
+                  "moduleId": {
+                    "type": "string",
+                    "const": "windowControls"
+                  },
+                  "resourceId": {
+                    "type": "string",
+                    "const": "gsettings:org.gnome.desktop.wm.preferences:button-layout"
+                  },
+                  "desired": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "string"
+                      },
+                      "value": {
+                        "type": "string",
+                        "const": "close,minimize,maximize:"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "value"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "risk": {
+                    "type": "string",
+                    "const": "low"
+                  },
+                  "rollbackQuality": {
+                    "type": "string",
+                    "const": "exact-if-unchanged"
+                  }
+                },
+                "required": [
+                  "id",
+                  "privilege",
+                  "dependsOn",
+                  "expectedBeforeDigest",
+                  "kind",
+                  "moduleId",
+                  "resourceId",
+                  "desired",
+                  "risk",
+                  "rollbackQuality"
+                ],
+                "additionalProperties": false
               }
-            },
-            "required": [
-              "kind",
-              "id",
-              "privilege",
-              "dependsOn",
-              "expectedBeforeDigest",
-              "moduleId",
-              "resourceId",
-              "desired",
-              "risk",
-              "rollbackQuality"
-            ],
-            "additionalProperties": false
+            ]
           },
           {
-            "type": "object",
-            "properties": {
-              "kind": {
-                "type": "string",
-                "const": "gsettings.set"
-              },
-              "id": {
-                "type": "string",
-                "pattern": "^op_[a-f0-9]{64}$"
-              },
-              "privilege": {
-                "type": "string",
-                "const": "user"
-              },
-              "dependsOn": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "pattern": "^op_[a-f0-9]{64}$"
-                }
-              },
-              "expectedBeforeDigest": {
-                "type": "string",
-                "pattern": "^[a-f0-9]{64}$"
-              },
-              "moduleId": {
-                "type": "string",
-                "const": "workspaces"
-              },
-              "resourceId": {
-                "type": "string",
-                "const": "gsettings:org.gnome.desktop.wm.preferences:num-workspaces"
-              },
-              "desired": {
+            "oneOf": [
+              {
                 "type": "object",
                 "properties": {
-                  "type": {
+                  "id": {
                     "type": "string",
-                    "const": "int32"
+                    "pattern": "^op_[a-f0-9]{64}$"
                   },
-                  "value": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 36
+                  "privilege": {
+                    "type": "string",
+                    "const": "user"
+                  },
+                  "dependsOn": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^op_[a-f0-9]{64}$"
+                    }
+                  },
+                  "expectedBeforeDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "resource.adopt"
+                  },
+                  "moduleId": {
+                    "type": "string",
+                    "const": "workspaces"
+                  },
+                  "resourceId": {
+                    "type": "string",
+                    "const": "gsettings:org.gnome.mutter:dynamic-workspaces"
+                  },
+                  "desired": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "boolean"
+                      },
+                      "value": {
+                        "type": "boolean",
+                        "const": false
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "value"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "risk": {
+                    "type": "string",
+                    "const": "none"
+                  },
+                  "rollbackQuality": {
+                    "type": "string",
+                    "const": "exact-if-unchanged"
                   }
                 },
                 "required": [
-                  "type",
-                  "value"
+                  "id",
+                  "privilege",
+                  "dependsOn",
+                  "expectedBeforeDigest",
+                  "kind",
+                  "moduleId",
+                  "resourceId",
+                  "desired",
+                  "risk",
+                  "rollbackQuality"
                 ],
                 "additionalProperties": false
               },
-              "risk": {
-                "type": "string",
-                "const": "desktop-session"
-              },
-              "rollbackQuality": {
-                "type": "string",
-                "const": "not-implemented"
-              }
-            },
-            "required": [
-              "kind",
-              "id",
-              "privilege",
-              "dependsOn",
-              "expectedBeforeDigest",
-              "moduleId",
-              "resourceId",
-              "desired",
-              "risk",
-              "rollbackQuality"
-            ],
-            "additionalProperties": false
-          },
-          {
-            "type": "object",
-            "properties": {
-              "kind": {
-                "type": "string",
-                "const": "gsettings.set"
-              },
-              "id": {
-                "type": "string",
-                "pattern": "^op_[a-f0-9]{64}$"
-              },
-              "privilege": {
-                "type": "string",
-                "const": "user"
-              },
-              "dependsOn": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "pattern": "^op_[a-f0-9]{64}$"
-                }
-              },
-              "expectedBeforeDigest": {
-                "type": "string",
-                "pattern": "^[a-f0-9]{64}$"
-              },
-              "moduleId": {
-                "type": "string",
-                "const": "workspaces"
-              },
-              "resourceId": {
-                "type": "string",
-                "const": "gsettings:org.gnome.mutter:workspaces-only-on-primary"
-              },
-              "desired": {
+              {
                 "type": "object",
                 "properties": {
-                  "type": {
+                  "id": {
                     "type": "string",
-                    "const": "boolean"
+                    "pattern": "^op_[a-f0-9]{64}$"
                   },
-                  "value": {
-                    "type": "boolean"
+                  "privilege": {
+                    "type": "string",
+                    "const": "user"
+                  },
+                  "dependsOn": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^op_[a-f0-9]{64}$"
+                    }
+                  },
+                  "expectedBeforeDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "resource.adopt"
+                  },
+                  "moduleId": {
+                    "type": "string",
+                    "const": "workspaces"
+                  },
+                  "resourceId": {
+                    "type": "string",
+                    "const": "gsettings:org.gnome.desktop.wm.preferences:num-workspaces"
+                  },
+                  "desired": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "int32"
+                      },
+                      "value": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 36
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "value"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "risk": {
+                    "type": "string",
+                    "const": "none"
+                  },
+                  "rollbackQuality": {
+                    "type": "string",
+                    "const": "exact-if-unchanged"
                   }
                 },
                 "required": [
-                  "type",
-                  "value"
+                  "id",
+                  "privilege",
+                  "dependsOn",
+                  "expectedBeforeDigest",
+                  "kind",
+                  "moduleId",
+                  "resourceId",
+                  "desired",
+                  "risk",
+                  "rollbackQuality"
                 ],
                 "additionalProperties": false
               },
-              "risk": {
-                "type": "string",
-                "const": "desktop-session"
-              },
-              "rollbackQuality": {
-                "type": "string",
-                "const": "not-implemented"
-              }
-            },
-            "required": [
-              "kind",
-              "id",
-              "privilege",
-              "dependsOn",
-              "expectedBeforeDigest",
-              "moduleId",
-              "resourceId",
-              "desired",
-              "risk",
-              "rollbackQuality"
-            ],
-            "additionalProperties": false
-          },
-          {
-            "type": "object",
-            "properties": {
-              "kind": {
-                "type": "string",
-                "const": "gsettings.set"
-              },
-              "id": {
-                "type": "string",
-                "pattern": "^op_[a-f0-9]{64}$"
-              },
-              "privilege": {
-                "type": "string",
-                "const": "user"
-              },
-              "dependsOn": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "pattern": "^op_[a-f0-9]{64}$"
-                }
-              },
-              "expectedBeforeDigest": {
-                "type": "string",
-                "pattern": "^[a-f0-9]{64}$"
-              },
-              "moduleId": {
-                "type": "string",
-                "const": "windowControls"
-              },
-              "resourceId": {
-                "type": "string",
-                "const": "gsettings:org.gnome.desktop.wm.preferences:button-layout"
-              },
-              "desired": {
+              {
                 "type": "object",
                 "properties": {
-                  "type": {
+                  "id": {
                     "type": "string",
-                    "const": "string"
+                    "pattern": "^op_[a-f0-9]{64}$"
                   },
-                  "value": {
+                  "privilege": {
                     "type": "string",
-                    "const": "close,minimize,maximize:"
+                    "const": "user"
+                  },
+                  "dependsOn": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^op_[a-f0-9]{64}$"
+                    }
+                  },
+                  "expectedBeforeDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "resource.adopt"
+                  },
+                  "moduleId": {
+                    "type": "string",
+                    "const": "workspaces"
+                  },
+                  "resourceId": {
+                    "type": "string",
+                    "const": "gsettings:org.gnome.mutter:workspaces-only-on-primary"
+                  },
+                  "desired": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "boolean"
+                      },
+                      "value": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "value"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "risk": {
+                    "type": "string",
+                    "const": "none"
+                  },
+                  "rollbackQuality": {
+                    "type": "string",
+                    "const": "exact-if-unchanged"
                   }
                 },
                 "required": [
-                  "type",
-                  "value"
+                  "id",
+                  "privilege",
+                  "dependsOn",
+                  "expectedBeforeDigest",
+                  "kind",
+                  "moduleId",
+                  "resourceId",
+                  "desired",
+                  "risk",
+                  "rollbackQuality"
                 ],
                 "additionalProperties": false
               },
-              "risk": {
-                "type": "string",
-                "const": "low"
-              },
-              "rollbackQuality": {
-                "type": "string",
-                "const": "not-implemented"
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^op_[a-f0-9]{64}$"
+                  },
+                  "privilege": {
+                    "type": "string",
+                    "const": "user"
+                  },
+                  "dependsOn": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^op_[a-f0-9]{64}$"
+                    }
+                  },
+                  "expectedBeforeDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "resource.adopt"
+                  },
+                  "moduleId": {
+                    "type": "string",
+                    "const": "windowControls"
+                  },
+                  "resourceId": {
+                    "type": "string",
+                    "const": "gsettings:org.gnome.desktop.wm.preferences:button-layout"
+                  },
+                  "desired": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "string"
+                      },
+                      "value": {
+                        "type": "string",
+                        "const": "close,minimize,maximize:"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "value"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "risk": {
+                    "type": "string",
+                    "const": "none"
+                  },
+                  "rollbackQuality": {
+                    "type": "string",
+                    "const": "exact-if-unchanged"
+                  }
+                },
+                "required": [
+                  "id",
+                  "privilege",
+                  "dependsOn",
+                  "expectedBeforeDigest",
+                  "kind",
+                  "moduleId",
+                  "resourceId",
+                  "desired",
+                  "risk",
+                  "rollbackQuality"
+                ],
+                "additionalProperties": false
               }
-            },
-            "required": [
-              "kind",
-              "id",
-              "privilege",
-              "dependsOn",
-              "expectedBeforeDigest",
-              "moduleId",
-              "resourceId",
-              "desired",
-              "risk",
-              "rollbackQuality"
-            ],
-            "additionalProperties": false
+            ]
           }
         ]
       }
@@ -975,6 +1669,11 @@
     "summary": {
       "type": "object",
       "properties": {
+        "adoptions": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
         "changes": {
           "type": "integer",
           "minimum": 0,
@@ -997,6 +1696,7 @@
         }
       },
       "required": [
+        "adoptions",
         "changes",
         "unchanged",
         "unavailable",

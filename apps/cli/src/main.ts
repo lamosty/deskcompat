@@ -1,13 +1,28 @@
 #!/usr/bin/env bun
 
-import { ProfileLoadError } from "@deskcompat/core";
+import { ProfileLoadError, TransactionError } from "@deskcompat/core";
 import type { Diagnostic } from "@deskcompat/schema";
+import { GSettingsDriverError } from "@deskcompat/ubuntu-gnome";
 import { CliUsageError, parseArguments } from "./arguments.ts";
+import { apply, CliCommandError } from "./commands/apply.ts";
 import { doctor } from "./commands/doctor.ts";
+import { history } from "./commands/history.ts";
 import { plan } from "./commands/plan.ts";
+import { recover } from "./commands/recover.ts";
+import { revert } from "./commands/revert.ts";
+import { status } from "./commands/status.ts";
 import { validateProfile } from "./commands/validate-profile.ts";
 import { assertUnprivileged, CliEnvironmentError } from "./environment.ts";
-import { result, writeDiagnostics, writeDoctor, writeJson, writePlan } from "./output/render.ts";
+import {
+  result,
+  writeDiagnostics,
+  writeDoctor,
+  writeHistory,
+  writeJson,
+  writePlan,
+  writeStatus,
+  writeTransaction,
+} from "./output/render.ts";
 import { DESKCOMPAT_VERSION } from "./version.ts";
 
 const HELP = `DeskCompat ${DESKCOMPAT_VERSION}
@@ -18,9 +33,15 @@ Usage:
   deskcompat doctor [--json]
   deskcompat profile validate [--profile PATH] [--json]
   deskcompat plan [--profile PATH] [--only MODULE,...] [--json]
+  deskcompat apply --plan PATH [--json]
+  deskcompat status [--json]
+  deskcompat history [--json]
+  deskcompat revert --transaction ID [--json]
+  deskcompat recover --transaction ID [--json]
   deskcompat --version
 
-This pre-alpha build is read-only. It cannot apply system changes.
+Planning is read-only. This pre-alpha can apply and revert only four allowlisted scalar GNOME settings;
+mutations are explicit, journaled operations over a validated plan and never accept arbitrary shell commands.
 `;
 
 function exitCodeFor(diagnostics: readonly Diagnostic[]): number {
@@ -47,6 +68,44 @@ async function main(): Promise<void> {
     const commandResult = await plan(parsed.profilePath, parsed.only);
     if (parsed.json) writeJson(commandResult);
     else if (commandResult.data) writePlan(commandResult.data);
+    process.exitCode = exitCodeFor(commandResult.diagnostics);
+    return;
+  }
+
+  if (parsed.command === "apply") {
+    const commandResult = await apply(parsed.planPath ?? "");
+    if (parsed.json) writeJson(commandResult);
+    else if (commandResult.data) writeTransaction("apply", commandResult.data);
+    process.exitCode = exitCodeFor(commandResult.diagnostics);
+    return;
+  }
+
+  if (parsed.command === "status") {
+    const commandResult = await status();
+    if (parsed.json) writeJson(commandResult);
+    else if (commandResult.data) {
+      writeStatus(commandResult.data.ownership, commandResult.data.resources);
+      writeDiagnostics(commandResult.diagnostics);
+    }
+    process.exitCode = exitCodeFor(commandResult.diagnostics);
+    return;
+  }
+
+  if (parsed.command === "history") {
+    const commandResult = await history();
+    if (parsed.json) writeJson(commandResult);
+    else if (commandResult.data) writeHistory(commandResult.data.transactions);
+    process.exitCode = exitCodeFor(commandResult.diagnostics);
+    return;
+  }
+
+  if (parsed.command === "revert" || parsed.command === "recover") {
+    const commandResult =
+      parsed.command === "revert"
+        ? await revert(parsed.transactionId ?? "")
+        : await recover(parsed.transactionId ?? "");
+    if (parsed.json) writeJson(commandResult);
+    else if (commandResult.data) writeTransaction(parsed.command, commandResult.data);
     process.exitCode = exitCodeFor(commandResult.diagnostics);
     return;
   }
@@ -79,12 +138,29 @@ try {
         ? { code: error.code, severity: "error", message: error.message }
         : error instanceof CliEnvironmentError
           ? { code: error.code, severity: "blocker", message: error.message }
-          : {
-              code: "UNEXPECTED_FAILURE",
-              severity: "error",
-              message: "DeskCompat could not complete the read-only operation.",
-              remediation: "Retry with a supported environment and report the diagnostic code.",
-            };
+          : error instanceof CliCommandError
+            ? { code: error.code, severity: "error", message: error.message }
+            : error instanceof TransactionError
+              ? {
+                  code: error.code,
+                  severity: "error",
+                  message: "DeskCompat could not complete the requested transaction.",
+                  remediation: "Review the transaction status and run recover if required.",
+                }
+              : error instanceof GSettingsDriverError
+                ? {
+                    code: error.code,
+                    severity: "error",
+                    message:
+                      "The GNOME settings driver could not complete the requested operation.",
+                  }
+                : {
+                    code: "UNEXPECTED_FAILURE",
+                    severity: "error",
+                    message: "DeskCompat could not complete the requested operation.",
+                    remediation:
+                      "Retry with a supported environment and report the diagnostic code.",
+                  };
 
   if (json) writeJson(result("invocation", undefined, [diagnostic]));
   else writeDiagnostics([diagnostic]);

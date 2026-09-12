@@ -103,7 +103,7 @@ describe("verifyPlanIntegrity", () => {
     const nonChange = reseal({
       ...plan,
       resources: [{ ...resource, disposition: "unchanged" }],
-      summary: { changes: 0, unchanged: 1, unavailable: 0, skipped: 0 },
+      summary: { adoptions: 0, changes: 0, unchanged: 1, unavailable: 0, skipped: 0 },
     });
 
     expect(verifyPlanIntegrity(nonChange)).toBe(false);
@@ -129,7 +129,7 @@ describe("verifyPlanIntegrity", () => {
         },
       ],
       operations: [],
-      summary: { changes: 0, unchanged: 0, unavailable: 0, skipped: 1 },
+      summary: { adoptions: 0, changes: 0, unchanged: 0, unavailable: 0, skipped: 1 },
     });
 
     expect(verifyPlanIntegrity(invalidModules)).toBe(false);
@@ -146,7 +146,7 @@ describe("verifyPlanIntegrity", () => {
         },
       ],
       operations: [],
-      summary: { changes: 0, unchanged: 0, unavailable: 0, skipped: 1 },
+      summary: { adoptions: 0, changes: 0, unchanged: 0, unavailable: 0, skipped: 1 },
     });
     expect(verifyPlanIntegrity(duplicateModules)).toBe(false);
 
@@ -163,7 +163,7 @@ describe("verifyPlanIntegrity", () => {
         },
       ],
       operations: [],
-      summary: { changes: 0, unchanged: 0, unavailable: 0, skipped: 1 },
+      summary: { adoptions: 0, changes: 0, unchanged: 0, unavailable: 0, skipped: 1 },
     });
     expect(verifyPlanIntegrity(outsideScope)).toBe(false);
   });
@@ -210,12 +210,107 @@ describe("verifyPlanIntegrity", () => {
     const wrongRisk = { ...plan, operations: [{ ...operation, risk: "desktop-session" }] };
     const wrongRollback = {
       ...plan,
-      operations: [{ ...operation, rollbackQuality: "exact-if-unchanged" }],
+      operations: [{ ...operation, rollbackQuality: "not-implemented" }],
     };
 
     expect(PlanSchema.safeParse(wrongRisk).success).toBe(false);
     expect(verifyPlanIntegrity(wrongRisk)).toBe(false);
     expect(PlanSchema.safeParse(wrongRollback).success).toBe(false);
     expect(verifyPlanIntegrity(wrongRollback)).toBe(false);
+  });
+
+  test("rejects a resealed unchanged disposition whose desired value differs", async () => {
+    const plan = await changedPlan();
+    const resource = plan.resources[0];
+    if (!resource || !("digest" in resource.observed)) throw new Error("fixture is not observed");
+    const tampered = reseal({
+      ...plan,
+      resources: [
+        {
+          ...resource,
+          disposition: "unchanged",
+          ownership: {
+            status: "owned",
+            moduleId: "windowControls",
+            appliedDigest: resource.observed.digest,
+          },
+        },
+      ],
+      operations: [],
+      summary: { adoptions: 0, changes: 0, unchanged: 1, unavailable: 0, skipped: 0 },
+    });
+
+    expect(verifyPlanIntegrity(tampered)).toBe(false);
+  });
+
+  test("rejects resealed observation and disposition tampering", async () => {
+    const plan = await changedPlan();
+    const resource = plan.resources[0];
+    const operation = plan.operations[0];
+    if (
+      resource?.resourceId !== "gsettings:org.gnome.desktop.wm.preferences:button-layout" ||
+      resource.observed.status !== "inherited" ||
+      operation?.resourceId !== "gsettings:org.gnome.desktop.wm.preferences:button-layout"
+    ) {
+      throw new Error("fixture is not an inherited change");
+    }
+    const matchingState = {
+      status: "inherited" as const,
+      effectiveRaw: "'close,minimize,maximize:'",
+      effective: { type: "string" as const, value: "close,minimize,maximize:" },
+      writable: true,
+    };
+    const matchingDigest = sha256({
+      domain: "deskcompat.gsettings-observation.v1",
+      resourceId: resource.resourceId,
+      ...matchingState,
+    });
+    const tampered = reseal({
+      ...plan,
+      resources: [
+        {
+          ...resource,
+          observed: { ...matchingState, digest: matchingDigest },
+        },
+      ],
+      operations: [{ ...operation, expectedBeforeDigest: matchingDigest }],
+    });
+
+    expect(verifyPlanIntegrity(tampered)).toBe(false);
+
+    const badDigest = reseal({
+      ...plan,
+      resources: [
+        {
+          ...resource,
+          observed: { ...resource.observed, effectiveRaw: "'tampered'" },
+        },
+      ],
+    });
+    expect(verifyPlanIntegrity(badDigest)).toBe(false);
+  });
+
+  test("rejects zero, negative, and overlong plan lifetimes", async () => {
+    const plan = await changedPlan();
+    const invalidExpirations = [
+      plan.createdAt,
+      "2025-12-31T23:59:59.999Z",
+      "2026-01-01T01:00:00.001Z",
+    ];
+
+    for (const expiresAt of invalidExpirations) {
+      expect(verifyPlanIntegrity(reseal({ ...plan, expiresAt }))).toBe(false);
+    }
+  });
+
+  test("requires diagnostics to be in their severity-specific collections", async () => {
+    const plan = await changedPlan();
+    const invalid = {
+      ...plan,
+      warnings: [{ code: "MISFILED", severity: "blocker", message: "wrong collection" }],
+    };
+
+    expect(PlanSchema.safeParse(invalid).success).toBe(false);
+    expect(verifyPlanIntegrity(invalid)).toBe(false);
   });
 });

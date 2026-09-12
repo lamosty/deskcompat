@@ -14,17 +14,17 @@ exports[`buildPlan is semantically deterministic 1`] = `
         "type": "string",
         "value": "close,minimize,maximize:",
       },
-      "expectedBeforeDigest": "b06e7574bcac88e16dcd1efadb6da21a156a147b93b9515f0af62b5a6d046b5d",
+      "expectedBeforeDigest": "6ad1929f400dd8703b3a90c20ccffaa05e6db9fe7e54b26db0e7b27ea3fe44b1",
       "id": "op_907776acba7ba9857d35187f76a7c0898af597e563f3effed855eedfdeb36296",
       "kind": "gsettings.set",
       "moduleId": "windowControls",
       "privilege": "user",
       "resourceId": "gsettings:org.gnome.desktop.wm.preferences:button-layout",
       "risk": "low",
-      "rollbackQuality": "not-implemented",
+      "rollbackQuality": "exact-if-unchanged",
     },
   ],
-  "planId": "pln_2b4efb532b3b3d39b52b003633c451b264b28927a432d0ade12f45209e6a4064",
+  "planId": "pln_358711ba234da1911b741ac5d78c32b38033399b0679929d0018e4cad3659e04",
   "profileDigest": "296bfe39f7933a62211e9f1bdf41842086e7e434a090af332fcf4b422183cbf7",
   "resources": [
     {
@@ -39,13 +39,17 @@ exports[`buildPlan is semantically deterministic 1`] = `
         "windowControls",
       ],
       "observed": {
-        "digest": "b06e7574bcac88e16dcd1efadb6da21a156a147b93b9515f0af62b5a6d046b5d",
+        "digest": "6ad1929f400dd8703b3a90c20ccffaa05e6db9fe7e54b26db0e7b27ea3fe44b1",
         "effective": {
           "type": "string",
           "value": ":close",
         },
+        "effectiveRaw": "':close'",
         "status": "inherited",
         "writable": true,
+      },
+      "ownership": {
+        "status": "unowned",
       },
       "resourceId": "gsettings:org.gnome.desktop.wm.preferences:button-layout",
     },
@@ -53,8 +57,9 @@ exports[`buildPlan is semantically deterministic 1`] = `
   "scope": [
     "windowControls",
   ],
-  "semanticDigest": "sem_9cdd6bb40af212589e521f95bd0bc3b848941b16f8ae09528f7dd22926e483d2",
+  "semanticDigest": "sem_bc337db944722ba4e2d18c6d1bfae370708fa44ec11c25bddd9543285f8a0f2c",
   "summary": {
+    "adoptions": 0,
     "changes": 1,
     "skipped": 0,
     "unavailable": 0,

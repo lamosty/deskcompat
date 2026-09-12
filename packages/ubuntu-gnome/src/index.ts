@@ -1,3 +1,4 @@
+export * from "./drivers/gsettings-mutator.ts";
 export * from "./live.ts";
 export * from "./modules/registry.ts";
 export * from "./platform/os-release.ts";

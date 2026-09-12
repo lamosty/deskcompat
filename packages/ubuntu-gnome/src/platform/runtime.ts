@@ -89,9 +89,7 @@ export class LivePlatformRuntime implements PlatformRuntime {
       const sessionType = properties.get("Type");
       return {
         ...session,
-        ...(session.currentDesktop !== undefined || !currentDesktop
-          ? {}
-          : { currentDesktop }),
+        ...(session.currentDesktop !== undefined || !currentDesktop ? {} : { currentDesktop }),
         ...(session.sessionType !== undefined || !sessionType ? {} : { sessionType }),
       };
     } catch {

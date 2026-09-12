@@ -5,6 +5,7 @@ import type {
   HostFacts,
   ModuleId,
   ObservedSetting,
+  OwnershipEntry,
   Profile,
 } from "@deskcompat/schema";
 
@@ -27,12 +28,16 @@ export interface SettingInspector {
   inspect(target: GSettingsTarget): Promise<ObservedSetting>;
 }
 
+/** The bounded ownership assertion needed by planning; recovery data stays private. */
+export type PlannerOwnership = Pick<OwnershipEntry, "resourceId" | "moduleId" | "appliedDigest">;
+
 export interface PlannerInput {
   readonly profile: Profile;
   readonly facts: HostFacts;
   readonly desiredSettings: readonly DesiredSetting[];
   readonly selectedModules: readonly ModuleId[];
   readonly inspector: SettingInspector;
+  readonly ownership?: readonly PlannerOwnership[];
   readonly supportDiagnostics: readonly Diagnostic[];
   readonly allowInspection?: boolean;
   readonly toolVersion: string;

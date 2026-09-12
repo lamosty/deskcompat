@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "const": "deskcompat.dev/ownership/v1alpha1"
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resourceId": {
+            "type": "string",
+            "enum": [
+              "gsettings:org.gnome.mutter:dynamic-workspaces",
+              "gsettings:org.gnome.desktop.wm.preferences:num-workspaces",
+              "gsettings:org.gnome.mutter:workspaces-only-on-primary",
+              "gsettings:org.gnome.desktop.wm.preferences:button-layout"
+            ]
+          },
+          "moduleId": {
+            "type": "string",
+            "enum": [
+              "workspaces",
+              "windowControls",
+              "keyboard"
+            ]
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "adopted",
+              "changed"
+            ]
+          },
+          "baselineBlobDigest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "baselineDigest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "appliedDigest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "acquiredByTransactionId": {
+            "type": "string",
+            "pattern": "^tx_[a-f0-9]{64}$"
+          },
+          "lastTransactionId": {
+            "type": "string",
+            "pattern": "^tx_[a-f0-9]{64}$"
+          },
+          "acquiredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "resourceId",
+          "moduleId",
+          "origin",
+          "baselineBlobDigest",
+          "baselineDigest",
+          "appliedDigest",
+          "acquiredByTransactionId",
+          "lastTransactionId",
+          "acquiredAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "apiVersion",
+    "resources"
+  ],
+  "additionalProperties": false
+}

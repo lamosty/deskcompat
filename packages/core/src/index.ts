@@ -1,6 +1,15 @@
 export * from "./canonical-json.ts";
 export * from "./planner/build-plan.ts";
+export * from "./planner/fingerprints.ts";
 export * from "./planner/plan-integrity.ts";
 export * from "./planner/render-gvariant.ts";
 export * from "./planner/types.ts";
 export * from "./profile-loader.ts";
+export * from "./transaction/driver.ts";
+export * from "./transaction/engine.ts";
+export * from "./transaction/errors.ts";
+export { resolveStateRoot } from "./transaction/filesystem.ts";
+export * from "./transaction/journal.ts";
+export * from "./transaction/lock.ts";
+export * from "./transaction/snapshot.ts";
+export * from "./transaction/store.ts";

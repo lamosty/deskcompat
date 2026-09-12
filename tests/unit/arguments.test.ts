@@ -25,6 +25,30 @@ describe("parseArguments", () => {
   test("does not accept profile options for doctor", () => {
     expect(() => parseArguments(["doctor", "--profile", "x.toml"])).toThrow(CliUsageError);
   });
+
+  test("parses explicit transaction lifecycle commands", () => {
+    expect(parseArguments(["apply", "--plan", "plan.json", "--json"])).toMatchObject({
+      command: "apply",
+      planPath: "plan.json",
+      json: true,
+    });
+    expect(parseArguments(["status"])).toMatchObject({ command: "status" });
+    expect(parseArguments(["history"])).toMatchObject({ command: "history" });
+    expect(parseArguments(["revert", "--transaction", `tx_${"a".repeat(64)}`])).toMatchObject({
+      command: "revert",
+      transactionId: `tx_${"a".repeat(64)}`,
+    });
+    expect(parseArguments(["recover", "--transaction", `tx_${"b".repeat(64)}`])).toMatchObject({
+      command: "recover",
+      transactionId: `tx_${"b".repeat(64)}`,
+    });
+  });
+
+  test("requires lifecycle command selectors", () => {
+    expect(() => parseArguments(["apply"])).toThrow(CliUsageError);
+    expect(() => parseArguments(["revert"])).toThrow(CliUsageError);
+    expect(() => parseArguments(["status", "--plan", "plan.json"])).toThrow(CliUsageError);
+  });
 });
 
 test("terminalSafe escapes control characters", () => {

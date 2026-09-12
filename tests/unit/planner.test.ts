@@ -55,14 +55,21 @@ class FixedInspector implements SettingInspector {
   }
 }
 
-const observation = (effectiveRaw: string): ObservedSetting => {
-  const semantic = {
+const observation = (effectiveRaw: string): Exclude<ObservedSetting, { status: "unavailable" }> => {
+  const state = {
     status: "inherited" as const,
     effectiveRaw,
     effective: { type: "string" as const, value: effectiveRaw.slice(1, -1) },
     writable: true,
   };
-  return { ...semantic, digest: sha256(semantic) };
+  return {
+    ...state,
+    digest: sha256({
+      domain: "deskcompat.gsettings-observation.v1",
+      resourceId: setting.target.resourceId,
+      ...state,
+    }),
+  };
 };
 
 describe("buildPlan", () => {
@@ -96,17 +103,111 @@ describe("buildPlan", () => {
     expect(first).toMatchSnapshot();
   });
 
-  test("does not plan an already matching effective value", async () => {
+  test("explicitly adopts an unowned matching effective value", async () => {
+    const observed = observation("'close,minimize,maximize:'");
     const plan = await buildPlan({
       profile,
       facts,
       desiredSettings: [setting],
       selectedModules: ["windowControls"],
-      inspector: new FixedInspector(observation("'close,minimize,maximize:'")),
+      inspector: new FixedInspector(observed),
       supportDiagnostics: [],
       toolVersion: "test",
     });
-    expect(plan.summary).toEqual({ changes: 0, unchanged: 1, unavailable: 0, skipped: 0 });
+    expect(plan.summary).toEqual({
+      adoptions: 1,
+      changes: 0,
+      unchanged: 0,
+      unavailable: 0,
+      skipped: 0,
+    });
+    expect(plan.resources[0]?.disposition).toBe("adopt");
+    expect(plan.operations).toMatchObject([
+      {
+        kind: "resource.adopt",
+        resourceId: setting.target.resourceId,
+        expectedBeforeDigest: observed.digest,
+      },
+    ]);
+  });
+
+  test("emits no operation for a healthy owned resource already at its desired value", async () => {
+    const observed = observation("'close,minimize,maximize:'");
+    const plan = await buildPlan({
+      profile,
+      facts,
+      desiredSettings: [setting],
+      selectedModules: ["windowControls"],
+      inspector: new FixedInspector(observed),
+      ownership: [
+        {
+          resourceId: setting.target.resourceId,
+          moduleId: "windowControls",
+          appliedDigest: observed.digest,
+        },
+      ],
+      supportDiagnostics: [],
+      toolVersion: "test",
+    });
+    expect(plan.summary).toEqual({
+      adoptions: 0,
+      changes: 0,
+      unchanged: 1,
+      unavailable: 0,
+      skipped: 0,
+    });
+    expect(plan.resources[0]?.disposition).toBe("unchanged");
+    expect(plan.operations).toEqual([]);
+  });
+
+  test("blocks drift of an owned resource instead of overwriting it", async () => {
+    const observed = observation("':external'");
+    const plan = await buildPlan({
+      profile,
+      facts,
+      desiredSettings: [setting],
+      selectedModules: ["windowControls"],
+      inspector: new FixedInspector(observed),
+      ownership: [
+        {
+          resourceId: setting.target.resourceId,
+          moduleId: "windowControls",
+          appliedDigest: "a".repeat(64),
+        },
+      ],
+      supportDiagnostics: [],
+      toolVersion: "test",
+    });
+    expect(plan.blockers).toMatchObject([
+      { code: "RESOURCE_OWNERSHIP_DRIFT", severity: "blocker" },
+    ]);
+    expect(plan.resources[0]?.disposition).toBe("skipped");
+    expect(plan.operations).toEqual([]);
+  });
+
+  test("blocks a resource owned by another module", async () => {
+    const observed = observation("'close,minimize,maximize:'");
+    const plan = await buildPlan({
+      profile,
+      facts,
+      desiredSettings: [setting],
+      selectedModules: ["windowControls"],
+      inspector: new FixedInspector(observed),
+      ownership: [
+        {
+          resourceId: setting.target.resourceId,
+          moduleId: "workspaces",
+          appliedDigest: observed.digest,
+        },
+      ],
+      supportDiagnostics: [],
+      toolVersion: "test",
+    });
+    expect(plan.blockers).toMatchObject([
+      { code: "RESOURCE_OWNED_BY_ANOTHER_MODULE", severity: "blocker" },
+    ]);
+    expect(plan.resources[0]?.disposition).toBe("skipped");
+    expect(plan.operations).toEqual([]);
   });
 
   test("does not change identity when diagnostic prose changes", async () => {
@@ -166,7 +267,7 @@ describe("buildPlan", () => {
       ...shared,
       inspector: new FixedInspector(observation("'close,minimize,maximize:'")),
     });
-    const explicitSemantic = {
+    const explicitState = {
       status: "present" as const,
       effectiveRaw: "'close,minimize,maximize:'",
       effective: { type: "string" as const, value: "close,minimize,maximize:" },
@@ -176,8 +277,12 @@ describe("buildPlan", () => {
     const explicit = await buildPlan({
       ...shared,
       inspector: new FixedInspector({
-        ...explicitSemantic,
-        digest: sha256(explicitSemantic),
+        ...explicitState,
+        digest: sha256({
+          domain: "deskcompat.gsettings-observation.v1",
+          resourceId: setting.target.resourceId,
+          ...explicitState,
+        }),
       }),
     });
     expect(inherited.semanticDigest).not.toBe(explicit.semanticDigest);
@@ -232,5 +337,22 @@ describe("buildPlan", () => {
       toolVersion: "test",
     });
     expect(verifyPlanIntegrity({ ...plan, expiresAt: "2099-01-01T00:00:00.000Z" })).toBe(false);
+  });
+
+  test("rejects invalid or unbounded requested lifetimes", async () => {
+    const base = {
+      profile,
+      facts,
+      desiredSettings: [setting],
+      selectedModules: ["windowControls"],
+      inspector: new FixedInspector(observation("':close'")),
+      supportDiagnostics: [],
+      toolVersion: "test",
+    } as const;
+
+    await expect(buildPlan({ ...base, ttlMs: 0 })).rejects.toBeInstanceOf(RangeError);
+    await expect(buildPlan({ ...base, ttlMs: 60 * 60 * 1_000 + 1 })).rejects.toBeInstanceOf(
+      RangeError,
+    );
   });
 });
