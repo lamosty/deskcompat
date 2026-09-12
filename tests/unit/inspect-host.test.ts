@@ -22,6 +22,10 @@ class FakeRuntime implements PlatformRuntime {
   };
   readonly commandRunner = new StaticRunner();
 
+  async inspectSession(): Promise<typeof this.session> {
+    return this.session;
+  }
+
   async readText(path: string): Promise<string | undefined> {
     return path === "/etc/os-release" ? 'ID=ubuntu\nVERSION_ID="24.04"\n' : undefined;
   }
@@ -61,5 +65,26 @@ describe("inspectHost", () => {
     const facts = await inspectHost(runtime);
     expect(facts.platform.desktop).toBe("other");
     expect(JSON.stringify(facts)).not.toContain("fixture-private-value");
+  });
+
+  test("identifies GNOME through its session bus when logind has no desktop name", async () => {
+    const runtime = new FakeRuntime();
+    runtime.session.currentDesktop = "";
+    Object.assign(runtime, {
+      commandRunner: {
+        run: async (specification: CommandSpec): Promise<CommandResult> => {
+          if (specification.executable === "/usr/bin/gdbus") {
+            expect(specification.args).toContain("org.gnome.Shell");
+            return { exitCode: 0, stdout: "()\n", stderr: "" };
+          }
+          return { exitCode: 0, stdout: "GNOME Shell 46.2\n", stderr: "" };
+        },
+      },
+      exists: async (path: string): Promise<boolean> =>
+        path === "/usr/bin/gdbus" ||
+        new Set(["/usr/bin/dconf", "/usr/bin/gsettings", "/usr/bin/gnome-shell"]).has(path),
+    });
+
+    expect((await inspectHost(runtime)).platform.desktop).toBe("gnome");
   });
 });

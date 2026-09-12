@@ -25,6 +25,40 @@ function desktopName(value: string | undefined): "gnome" | "other" | "unknown" {
   return value ? "other" : "unknown";
 }
 
+async function inspectDesktopName(
+  runtime: PlatformRuntime,
+  declaredDesktop: string | undefined,
+  hasGnomeShell: boolean,
+  hasSessionBus: boolean,
+): Promise<"gnome" | "other" | "unknown"> {
+  const declared = desktopName(declaredDesktop);
+  if (declared !== "unknown" || !hasGnomeShell || !hasSessionBus) return declared;
+  if (!(await runtime.exists("/usr/bin/gdbus"))) return "unknown";
+
+  try {
+    // @decision Some valid logind graphical sessions omit the Desktop property.
+    // A successful Peer.Ping to the well-known GNOME Shell bus name establishes the
+    // active desktop without inspecting process arguments, environments, or windows.
+    const result = await runtime.commandRunner.run({
+      executable: "/usr/bin/gdbus",
+      args: [
+        "call",
+        "--session",
+        "--dest",
+        "org.gnome.Shell",
+        "--object-path",
+        "/org/gnome/Shell",
+        "--method",
+        "org.freedesktop.DBus.Peer.Ping",
+      ],
+      maxOutputBytes: 256,
+    });
+    return result.exitCode === 0 ? "gnome" : "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
 function sessionType(value: string | undefined): "wayland" | "x11" | "other" | "unknown" {
   if (value === "wayland" || value === "x11") return value;
   return value ? "other" : "unknown";
@@ -46,16 +80,23 @@ async function inspectGnomeVersion(runtime: PlatformRuntime, available: boolean)
 
 export async function inspectHost(runtime: PlatformRuntime): Promise<HostFacts> {
   const osRelease = parseOsRelease((await runtime.readText("/etc/os-release", 64 * 1024)) ?? "");
+  const session = await runtime.inspectSession();
   const capabilities: Capability[] = [];
 
   for (const [id, path] of Object.entries(EXECUTABLES)) {
     capabilities.push({ id: id as Capability["id"], available: await runtime.exists(path) });
   }
-  capabilities.push({ id: "session-bus", available: runtime.session.hasSessionBus });
+  capabilities.push({ id: "session-bus", available: session.hasSessionBus });
   capabilities.sort((left, right) => compareText(left.id, right.id));
 
   const hasCapability = (id: Capability["id"]): boolean =>
     capabilities.some((capability) => capability.id === id && capability.available);
+  const activeDesktop = await inspectDesktopName(
+    runtime,
+    session.currentDesktop,
+    hasCapability("gnome-shell"),
+    hasCapability("session-bus"),
+  );
   const conflicts: Diagnostic[] = [];
 
   if (hasCapability("xremap")) {
@@ -101,9 +142,9 @@ export async function inspectHost(runtime: PlatformRuntime): Promise<HostFacts> 
           : osRelease.VERSION_ID === "24.04"
             ? "24.04"
             : "other",
-      desktop: desktopName(runtime.session.currentDesktop),
+      desktop: activeDesktop,
       desktopVersion: await inspectGnomeVersion(runtime, hasCapability("gnome-shell")),
-      sessionType: sessionType(runtime.session.sessionType),
+      sessionType: sessionType(session.sessionType),
     },
     capabilities,
     conflicts,
